@@ -1,0 +1,30 @@
+{
+  "generated_tips": [],
+  "categories": [
+    "Frontend",
+    "Backend / APIs",
+    "Database",
+    "Servers",
+    "Networking",
+    "Cloud Infrastructure",
+    "CI/CD Pipelines",
+    "Security",
+    "Containers",
+    "CDN",
+    "Monitoring & Logging",
+    "Backups & Recovery",
+    "Domain & SSL",
+    "Skills & Slash Commands",
+    "CLAUDE.md & Project Config",
+    "MCP Servers & Integrations",
+    "Git & Version Control",
+    "Testing & Debugging",
+    "Refactoring & Code Quality",
+    "Terminal Workflows",
+    "VS Code Extension Tips",
+    "AI Prompting Techniques",
+    "Automation & Scripting",
+    "Performance Optimization"
+  ],
+  "last_generated": null
+}
