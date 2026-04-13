@@ -1033,26 +1033,31 @@ function copyAll(btn) {
   });
 }
 
-// Analytics tracking
-(function(){
-  const slug = 'tip-1-refactoring';
-  const key = 'cctips_' + slug;
-  const isNew = !localStorage.getItem('cctips_visited_' + slug);
+// ============================================================
+// ANALYTICS TRACKING — sends view to Supabase (cross-user, server-side)
+// ============================================================
+(function() {
+  const SUPABASE_URL = 'https://kqxsighjqyumzzwvzaid.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxeHNpZ2hqcXl1bXp6d3Z6YWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MTc5NjEsImV4cCI6MjA3OTQ5Mzk2MX0.KhO9YOQmp4IfKgWlpN4FvB979Zh7LmWuYnE1e5pWy2w';
+  const TIP_ID    = 'tip-1';
+  const TIP_TITLE = 'Code Refactoring';
+  const TIP_URL   = window.location.href;
 
-  // Update localStorage analytics
-  let data;
-  try { data = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { data = {}; }
-  data.views = (data.views || 0) + 1;
-  if (isNew) {
-    data.unique = (data.unique || 0) + 1;
-    localStorage.setItem('cctips_visited_' + slug, '1');
-  }
-  data.lastVisit = new Date().toISOString();
-  if (!data.firstVisit) data.firstVisit = data.lastVisit;
-  localStorage.setItem(key, JSON.stringify(data));
-
-  // Track via CounterAPI (cross-user)
-  try { fetch('https://api.counterapi.dev/v1/cctips-shahar/' + slug + '/up', {mode:'cors'}); } catch(e){}
+  fetch(`${SUPABASE_URL}/rest/v1/tip_analytics`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      tip_id: TIP_ID,
+      tip_title: TIP_TITLE,
+      tip_url: TIP_URL,
+      screen_width: window.innerWidth
+    })
+  }).catch(function() {});
 })();
 </script>
 </body>
