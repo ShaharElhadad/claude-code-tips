@@ -1,114 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Code Tips</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: #0d1117;
-            color: #e6edf3;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .container {
-            max-width: 720px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #d2a8ff, #79c0ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            font-size: 1.15rem;
-            color: #8b949e;
-            margin-bottom: 2.5rem;
-        }
-
-        .tip-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-
-        .tip-card h2 {
-            font-size: 1.25rem;
-            color: #79c0ff;
-            margin-bottom: 0.75rem;
-        }
-
-        .tip-card p {
-            color: #c9d1d9;
-            line-height: 1.7;
-        }
-
-        .tip-card code {
-            background: #0d1117;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #d2a8ff;
-        }
-
-        footer {
-            margin-top: 3rem;
-            color: #484f58;
-            font-size: 0.85rem;
-        }
-
-        footer a {
-            color: #58a6ff;
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Tips | טיפים יומיים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fafaf9;
+  --card:#fff;
+  --ink:#111;
+  --ink-soft:#444;
+  --ink-muted:#888;
+  --border:#e8e8e3;
+  --accent:#c44b25;
+  --radius:10px;
+}
+body{
+  font-family:'Heebo',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.7;
+  min-height:100vh;
+}
+.wrapper{
+  max-width:720px;
+  margin:0 auto;
+  padding:3rem 1.5rem 4rem;
+}
+.header{
+  text-align:center;
+  margin-bottom:3rem;
+}
+.header h1{
+  font-size:2rem;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin-bottom:.5rem;
+}
+.header p{
+  color:var(--ink-muted);
+  font-size:1rem;
+}
+.dash-link{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  margin-top:.75rem;
+  color:var(--accent);
+  text-decoration:none;
+  font-size:.85rem;
+  font-weight:500;
+  border:1px solid var(--accent);
+  padding:.35rem .85rem;
+  border-radius:6px;
+  transition:all .2s;
+}
+.dash-link:hover{background:var(--accent);color:#fff}
+.tips-list{display:flex;flex-direction:column;gap:1rem}
+.tip-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  text-decoration:none;
+  color:inherit;
+  display:block;
+  transition:all .2s;
+}
+.tip-card:hover{
+  border-color:var(--accent);
+  box-shadow:0 2px 12px rgba(196,75,37,.08);
+  transform:translateY(-1px);
+}
+.tip-num{
+  font-size:.75rem;
+  font-weight:600;
+  color:var(--accent);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  margin-bottom:.25rem;
+}
+.tip-card h2{
+  font-size:1.15rem;
+  font-weight:700;
+  margin-bottom:.4rem;
+}
+.tip-card p{
+  color:var(--ink-muted);
+  font-size:.9rem;
+}
+footer{
+  text-align:center;
+  margin-top:3rem;
+  padding-top:1.5rem;
+  border-top:1px solid var(--border);
+  font-size:.8rem;
+  color:var(--ink-muted);
+}
+footer a{color:var(--accent);text-decoration:none;font-weight:500}
+footer a:hover{text-decoration:underline}
+@media(max-width:640px){
+  .wrapper{padding:2rem 1rem 3rem}
+  .header h1{font-size:1.65rem}
+}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Claude Code Tips</h1>
-        <p class="subtitle">Daily tips and tricks for getting the most out of Claude Code</p>
+<div class="wrapper">
+  <div class="header">
+    <h1>Claude Code Tips</h1>
+    <p>טיפים יומיים בעברית פשוטה, גם למי שלא טכנולוגי</p>
+    <a href="dashboard.html" class="dash-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+  </div>
 
-        <div class="tip-card">
-            <h2>Tip #1: Use slash commands</h2>
-            <p>Claude Code has built in slash commands like <code>/compact</code> to summarize your conversation and free up context, or <code>/clear</code> to start fresh. Type <code>/</code> to see all available commands.</p>
-        </div>
+  <div class="tips-list">
+    <a href="tips/tip-1-refactoring.html" class="tip-card">
+      <div class="tip-num">טיפ #1</div>
+      <h2>Code Refactoring עם Claude Code</h2>
+      <p>מה זה Refactoring ואיך Claude Code עושה את זה בשבילך, בשפה פשוטה</p>
+    </a>
+  </div>
 
-        <div class="tip-card">
-            <h2>Tip #2: CLAUDE.md is your best friend</h2>
-            <p>Create a <code>CLAUDE.md</code> file in your project root to give Claude persistent context about your codebase, coding standards, and preferences. It gets loaded automatically every session.</p>
-        </div>
-
-        <div class="tip-card">
-            <h2>Tip #3: Let Claude run your tests</h2>
-            <p>Instead of describing bugs, just ask Claude to run your test suite. It can execute commands, read the output, and fix failing tests in a single flow.</p>
-        </div>
-
-        <footer>
-            <p>Built by <a href="https://github.com/ShaharElhadad" target="_blank">Shahar Elhadad</a></p>
-        </footer>
-    </div>
+  <footer>
+    <p>By <a href="https://www.instagram.com/shahar_elhadad" target="_blank">Shahar Elhadad</a></p>
+  </footer>
+</div>
 </body>
 </html>

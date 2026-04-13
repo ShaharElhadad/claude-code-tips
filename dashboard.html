@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | Claude Code Tips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fafaf9;
+  --card:#fff;
+  --ink:#111;
+  --ink-soft:#444;
+  --ink-muted:#888;
+  --border:#e8e8e3;
+  --accent:#c44b25;
+  --accent-soft:#e8633e;
+  --green:#2d7a3a;
+  --green-bg:rgba(45,122,58,.06);
+  --blue:#2563eb;
+  --blue-bg:rgba(37,99,235,.06);
+  --radius:10px;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Heebo',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.7;
+  min-height:100vh;
+}
+
+.page-wrapper{
+  max-width:960px;
+  margin:0 auto;
+  padding:3rem 1.5rem 4rem;
+}
+
+/* Header */
+.dash-header{
+  margin-bottom:3rem;
+  padding-bottom:2rem;
+  border-bottom:1px solid var(--border);
+}
+
+.dash-header h1{
+  font-size:1.75rem;
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin-bottom:.35rem;
+}
+
+.dash-header p{
+  color:var(--ink-muted);
+  font-size:.95rem;
+}
+
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  color:var(--accent);
+  text-decoration:none;
+  font-size:.85rem;
+  font-weight:500;
+  margin-bottom:1.25rem;
+  transition:opacity .2s;
+}
+.back-link:hover{opacity:.7}
+.back-link svg{width:16px;height:16px}
+
+/* Stats Row */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1rem;
+  margin-bottom:2.5rem;
+}
+
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  text-align:center;
+}
+
+.stat-value{
+  font-size:2rem;
+  font-weight:800;
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--ink);
+  margin-bottom:.2rem;
+  min-height:2.5rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.stat-value.loading{
+  color:var(--ink-muted);
+  font-size:1rem;
+}
+
+.stat-label{
+  font-size:.8rem;
+  color:var(--ink-muted);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  font-weight:500;
+}
+
+.stat-card.accent .stat-value{color:var(--accent)}
+.stat-card.green .stat-value{color:var(--green)}
+.stat-card.blue .stat-value{color:var(--blue)}
+
+/* Tips Table */
+.tips-section h2{
+  font-size:1.15rem;
+  font-weight:700;
+  margin-bottom:1rem;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+
+.tips-table{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+
+.tip-row{
+  display:grid;
+  grid-template-columns:50px 1fr 100px 100px 120px;
+  align-items:center;
+  padding:1rem 1.25rem;
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+  text-decoration:none;
+  color:inherit;
+}
+
+.tip-row:last-child{border-bottom:none}
+.tip-row:hover{background:rgba(0,0,0,.015)}
+
+.tip-row.header{
+  background:#f7f7f4;
+  font-size:.75rem;
+  font-weight:600;
+  color:var(--ink-muted);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  padding:.75rem 1.25rem;
+  cursor:default;
+}
+.tip-row.header:hover{background:#f7f7f4}
+
+.tip-num{
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+  font-size:.85rem;
+  color:var(--accent);
+}
+
+.tip-title{
+  font-weight:500;
+  font-size:.95rem;
+}
+
+.tip-views, .tip-unique{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.9rem;
+  text-align:center;
+  color:var(--ink-soft);
+}
+
+.tip-link{
+  text-align:center;
+}
+
+.tip-link a{
+  display:inline-flex;
+  align-items:center;
+  gap:.3rem;
+  color:var(--accent);
+  text-decoration:none;
+  font-size:.8rem;
+  font-weight:500;
+  padding:.3rem .7rem;
+  border:1px solid var(--accent);
+  border-radius:6px;
+  transition:all .2s;
+}
+.tip-link a:hover{
+  background:var(--accent);
+  color:#fff;
+}
+
+.empty-state{
+  text-align:center;
+  padding:3rem;
+  color:var(--ink-muted);
+  font-size:.9rem;
+}
+
+/* Last updated */
+.last-updated{
+  text-align:center;
+  margin-top:1.5rem;
+  font-size:.75rem;
+  color:var(--ink-muted);
+}
+
+/* Footer */
+.dash-footer{
+  text-align:center;
+  margin-top:3rem;
+  padding-top:1.5rem;
+  border-top:1px solid var(--border);
+  font-size:.8rem;
+  color:var(--ink-muted);
+}
+.dash-footer a{
+  color:var(--accent);
+  text-decoration:none;
+  font-weight:500;
+}
+.dash-footer a:hover{text-decoration:underline}
+
+/* Mobile */
+@media(max-width:640px){
+  .page-wrapper{padding:2rem 1rem 3rem}
+  .stats-row{grid-template-columns:1fr;gap:.75rem}
+  .stat-card{padding:1.2rem}
+  .stat-value{font-size:1.75rem}
+  .tip-row{
+    grid-template-columns:40px 1fr 70px 70px;
+    font-size:.85rem;
+    padding:.85rem 1rem;
+  }
+  .tip-link{display:none}
+  .tip-row.header .tip-link-h{display:none}
+}
+
+/* Refresh button */
+.refresh-btn{
+  background:none;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:.3rem .7rem;
+  font-size:.75rem;
+  color:var(--ink-muted);
+  cursor:pointer;
+  font-family:'Heebo',sans-serif;
+  transition:all .2s;
+  display:inline-flex;
+  align-items:center;
+  gap:.3rem;
+}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
+.refresh-btn.spinning svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <a href="index.html" class="back-link">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    חזרה לטיפים
+  </a>
+
+  <div class="dash-header">
+    <h1>Dashboard</h1>
+    <p>מעקב צפיות בטיפים היומיים של Claude Code</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card accent">
+      <div class="stat-value loading" id="total-views">...</div>
+      <div class="stat-label">צפיות כולל</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-value loading" id="total-unique">...</div>
+      <div class="stat-label">מבקרים ייחודיים</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-value" id="total-tips">1</div>
+      <div class="stat-label">טיפים פורסמו</div>
+    </div>
+  </div>
+
+  <!-- Tips Table -->
+  <div class="tips-section">
+    <h2>
+      פירוט לפי טיפ
+      <button class="refresh-btn" onclick="refreshData()" id="refresh-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        רענן
+      </button>
+    </h2>
+
+    <div class="tips-table">
+      <div class="tip-row header">
+        <div>#</div>
+        <div>טיפ</div>
+        <div style="text-align:center">צפיות</div>
+        <div style="text-align:center">ייחודיים</div>
+        <div class="tip-link-h" style="text-align:center">קישור</div>
+      </div>
+      <div id="tips-list">
+        <div class="empty-state">טוען נתונים...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="last-updated" id="last-updated"></div>
+
+  <div class="dash-footer">
+    <p>By <a href="https://www.instagram.com/shahar_elhadad" target="_blank">Shahar Elhadad</a></p>
+  </div>
+</div>
+
+<script>
+// Tips registry - add new tips here
+const TIPS = [
+  {
+    id: 'tip-1',
+    num: 1,
+    title: 'Code Refactoring עם Claude Code',
+    url: 'tips/tip-1-refactoring.html',
+    slug: 'tip-1-refactoring'
+  }
+];
+
+// Analytics storage key prefix
+const STORAGE_PREFIX = 'cctips_';
+
+// Get analytics data from localStorage (aggregated across all visitors on this device)
+function getAnalytics() {
+  const data = {};
+  TIPS.forEach(tip => {
+    const stored = localStorage.getItem(STORAGE_PREFIX + tip.slug);
+    if (stored) {
+      try {
+        data[tip.slug] = JSON.parse(stored);
+      } catch(e) {
+        data[tip.slug] = { views: 0, unique: 0, firstVisit: null, lastVisit: null };
+      }
+    } else {
+      data[tip.slug] = { views: 0, unique: 0, firstVisit: null, lastVisit: null };
+    }
+  });
+  return data;
+}
+
+// Try to fetch from shared analytics endpoint
+async function fetchSharedAnalytics() {
+  const data = {};
+  for (const tip of TIPS) {
+    try {
+      // Try CounterAPI
+      const res = await fetch(`https://api.counterapi.dev/v1/cctips-shahar/${tip.slug}/`, {
+        signal: AbortSignal.timeout(3000)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        data[tip.slug] = { views: json.count || 0, unique: json.count || 0 };
+      }
+    } catch(e) {
+      // Fallback to localStorage
+      const stored = localStorage.getItem(STORAGE_PREFIX + tip.slug);
+      if (stored) {
+        try { data[tip.slug] = JSON.parse(stored); }
+        catch(e2) { data[tip.slug] = { views: 0, unique: 0 }; }
+      } else {
+        data[tip.slug] = { views: 0, unique: 0 };
+      }
+    }
+  }
+  return data;
+}
+
+function renderDashboard(data) {
+  let totalViews = 0;
+  let totalUnique = 0;
+
+  const rows = TIPS.map(tip => {
+    const d = data[tip.slug] || { views: 0, unique: 0 };
+    totalViews += d.views || 0;
+    totalUnique += d.unique || 0;
+
+    return `
+      <div class="tip-row" onclick="window.open('${tip.url}','_blank')" style="cursor:pointer">
+        <div class="tip-num">${tip.num}</div>
+        <div class="tip-title">${tip.title}</div>
+        <div class="tip-views">${(d.views || 0).toLocaleString()}</div>
+        <div class="tip-unique">${(d.unique || 0).toLocaleString()}</div>
+        <div class="tip-link"><a href="${tip.url}" target="_blank" onclick="event.stopPropagation()">צפה בטיפ <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/></svg></a></div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('tips-list').innerHTML = rows || '<div class="empty-state">אין טיפים עדיין</div>';
+
+  const viewsEl = document.getElementById('total-views');
+  const uniqueEl = document.getElementById('total-unique');
+  viewsEl.textContent = totalViews.toLocaleString();
+  viewsEl.classList.remove('loading');
+  uniqueEl.textContent = totalUnique.toLocaleString();
+  uniqueEl.classList.remove('loading');
+
+  document.getElementById('last-updated').textContent = 'עודכן: ' + new Date().toLocaleString('he-IL');
+}
+
+async function refreshData() {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+
+  try {
+    const data = await fetchSharedAnalytics();
+    renderDashboard(data);
+  } catch(e) {
+    const localData = getAnalytics();
+    renderDashboard(localData);
+  }
+
+  setTimeout(() => btn.classList.remove('spinning'), 500);
+}
+
+// Initial load
+refreshData();
+</script>
+</body>
+</html>
