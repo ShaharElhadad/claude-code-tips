@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Code Refactoring עם Claude Code — המדריך המלא</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --orange: #E8734A; --orange-light: #F4A261;
+  --bg-dark: #0D0D0D; --bg-card: #1A1A1A; --bg-card-hover: #222;
+  --border: #333; --text: #F5F5F5; --text-muted: #999; --text-dim: #666;
+  --green: #4ADE80; --blue: #60A5FA; --purple: #A78BFA; --red: #F87171; --yellow: #FBBF24;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Heebo', sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.7; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
+
+.hero { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(232,115,74,0.08) 0%, transparent 50%); animation: pulse-bg 8s ease-in-out infinite; }
+@keyframes pulse-bg { 0%, 100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); } }
+.hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; border: 1px solid var(--border); border-radius: 100px; font-size: 14px; color: var(--text-muted); margin-bottom: 32px; position: relative; z-index: 1; }
+.hero-badge svg { width: 16px; height: 16px; }
+.hero h1 { font-size: clamp(32px, 6vw, 72px); font-weight: 900; line-height: 1.15; margin-bottom: 20px; position: relative; z-index: 1; }
+.hero h1 span { background: linear-gradient(135deg, var(--orange), var(--orange-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero p { font-size: clamp(15px, 2.2vw, 22px); color: var(--text-muted); max-width: 600px; margin-bottom: 40px; position: relative; z-index: 1; padding: 0 10px; }
+.scroll-hint { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: var(--text-dim); font-size: 14px; animation: bounce 2s infinite; z-index: 1; }
+@keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(8px); } }
+
+section { max-width: 800px; margin: 0 auto; padding: 60px 16px; }
+.section-header { text-align: center; margin-bottom: 40px; }
+.section-header h2 { font-size: clamp(24px, 4vw, 42px); font-weight: 800; margin-bottom: 12px; }
+.section-header p { font-size: 16px; color: var(--text-muted); }
+
+.what-is { background: linear-gradient(180deg, transparent, rgba(232,115,74,0.03), transparent); }
+.explain-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+.explain-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.explain-card h3 .icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.explain-card p, .explain-card li { color: var(--text-muted); font-size: 15px; line-height: 1.8; }
+.explain-card ul { list-style: none; padding: 0; margin-top: 12px; }
+.explain-card ul li { padding: 6px 0; padding-right: 24px; position: relative; }
+.explain-card ul li::before { content: ''; position: absolute; right: 0; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+.highlight { color: var(--orange) !important; font-weight: 600; }
+.highlight-green { color: var(--green) !important; font-weight: 600; }
+.highlight-blue { color: var(--blue) !important; font-weight: 600; }
+.highlight-purple { color: var(--purple) !important; font-weight: 600; }
+
+.analogy-box { background: linear-gradient(135deg, rgba(232,115,74,0.08), rgba(244,162,97,0.04)); border: 1px solid rgba(232,115,74,0.3); border-radius: 16px; padding: 28px; margin-top: 24px; text-align: center; }
+.analogy-box .analogy-icon { font-size: 48px; margin-bottom: 16px; display: block; }
+.analogy-box h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+.analogy-box p { color: var(--text-muted); font-size: 15px; line-height: 1.8; max-width: 600px; margin: 0 auto; }
+
+.comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+.comparison-card { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+.comparison-card.before { border-top: 3px solid var(--red); }
+.comparison-card.after { border-top: 3px solid var(--green); }
+.comparison-label { padding: 12px 20px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.comparison-card.before .comparison-label { color: var(--red); }
+.comparison-card.after .comparison-label { color: var(--green); }
+
+.code-block { background: #111; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 16px 0; direction: ltr; text-align: left; }
+.code-header { background: #1a1a1a; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.code-header span { color: var(--text-muted); font-size: 13px; }
+.copy-btn { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: 'Heebo', sans-serif; transition: all 0.2s; }
+.copy-btn:hover { border-color: var(--orange); color: var(--orange); }
+.code-block pre { padding: 16px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.code-block code { font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; color: var(--green); }
+.code-block code .comment { color: var(--text-dim); }
+.code-block code .keyword { color: var(--purple); }
+.code-block code .string { color: var(--orange-light); }
+.code-block code .function { color: var(--blue); }
+
+.steps { position: relative; }
+.step { position: relative; padding-right: 60px; margin-bottom: 40px; }
+.step::before { content: ''; position: absolute; right: 22px; top: 50px; bottom: -40px; width: 2px; background: var(--border); }
+.step:last-child::before { display: none; }
+.step-number { position: absolute; right: 0; top: 0; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), var(--orange-light)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: white; z-index: 1; }
+.step-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+.step-content h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.step-content p { color: var(--text-muted); font-size: 15px; line-height: 1.8; }
+
+.patterns-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 24px; }
+.pattern-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; transition: all 0.3s ease; }
+.pattern-card:hover { transform: translateY(-2px); border-color: var(--orange); box-shadow: 0 8px 30px rgba(232,115,74,0.1); }
+.pattern-card .pattern-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.pattern-card .pattern-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pattern-card h3 { font-size: 17px; font-weight: 700; }
+.pattern-card .pattern-desc { color: var(--text-muted); font-size: 14px; line-height: 1.7; margin-bottom: 14px; }
+.pattern-card .prompt-example { background: #111; border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; text-align: right; font-family: 'Heebo', sans-serif; font-size: 13px; color: var(--green); line-height: 1.5; direction: rtl; }
+
+.tip-box { border-radius: 12px; padding: 18px 20px; margin: 16px 0; display: flex; align-items: flex-start; gap: 14px; }
+.tip-box.tip { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2); }
+.tip-box.warning { background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.2); }
+.tip-box.info { background: rgba(96,165,250,0.06); border: 1px solid rgba(96,165,250,0.2); }
+.tip-box .tip-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+.tip-box.tip .tip-icon { background: rgba(74,222,128,0.15); }
+.tip-box.warning .tip-icon { background: rgba(251,191,36,0.15); }
+.tip-box.info .tip-icon { background: rgba(96,165,250,0.15); }
+.tip-box p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+.tip-box strong { color: var(--text); }
+
+.faq-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+.faq-q { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 600; font-size: 15px; transition: background 0.2s; user-select: none; }
+.faq-q:hover { background: var(--bg-card-hover); }
+.faq-q svg { width: 20px; height: 20px; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
+.faq-item.open .faq-q svg { transform: rotate(180deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.faq-item.open .faq-a { max-height: 500px; }
+.faq-a-inner { padding: 0 20px 18px; color: var(--text-muted); font-size: 14px; line-height: 1.8; }
+
+.footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--border); max-width: 800px; margin: 0 auto; }
+.footer p { color: var(--text-dim); font-size: 14px; }
+.footer a { color: var(--orange); text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+@media (max-width: 640px) {
+  section { padding: 40px 14px; }
+  .comparison-grid { grid-template-columns: 1fr; }
+  .step { padding-right: 50px; }
+  .step-number { width: 38px; height: 38px; font-size: 15px; }
+  .step::before { right: 18px; }
+  .pattern-card .prompt-example { font-size: 12px; }
+}
+@media (max-width: 380px) { .hero h1 { font-size: 28px; } .code-block code { font-size: 11px; } }
+@media (hover: none) { .pattern-card:hover { transform: none; border-color: var(--border); box-shadow: none; } }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    Claude Code Daily Tip
+  </div>
+  <h1>Code <span>Refactoring</span><br>עם Claude Code</h1>
+  <p>המדריך המלא לשיפור קוד קיים בלי לשבור כלום. מה זה Refactoring, למה צריך את זה, ואיך Claude Code עושה את זה בשבילך.</p>
+  <div class="scroll-hint">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 13l5 5 5-5"/><path d="M7 6l5 5 5-5"/></svg>
+  </div>
+</div>
+
+<section class="what-is">
+  <div class="section-header">
+    <h2>מה זה בכלל Refactoring?</h2>
+    <p>הסבר פשוט, בלי ז'רגון מיותר</p>
+  </div>
+
+  <div class="explain-card">
+    <h3>
+      <span class="icon" style="background: rgba(232,115,74,0.15);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E8734A" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      </span>
+      ההגדרה הקצרה
+    </h3>
+    <p>
+      <span class="highlight">Refactoring</span> זה תהליך של שיפור מבנה הקוד הקיים, בלי לשנות את מה שהוא עושה.
+      הקוד ממשיך לעבוד בדיוק אותו דבר, אבל הוא נהיה <span class="highlight-green">נקי יותר</span>, <span class="highlight-blue">קריא יותר</span>, ו<span class="highlight-purple">קל יותר לתחזוקה</span>.
+    </p>
+  </div>
+
+  <div class="explain-card">
+    <h3>
+      <span class="icon" style="background: rgba(96,165,250,0.15);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0022 16z"/></svg>
+      </span>
+      למה צריך את זה?
+    </h3>
+    <p>כשכותבים קוד, לפעמים ממהרים. פונקציה שהתחילה עם 10 שורות גדלה ל-200. שם משתנה שהיה הגיוני כבר לא מתאר את מה שהוא עושה. קוד כפול מופיע בשלושה מקומות שונים.</p>
+    <ul>
+      <li><strong>קריאות</strong> — קוד שקל להבין גם אחרי חודשיים</li>
+      <li><strong>תחזוקה</strong> — תיקון באגים נהיה פשוט ומהיר</li>
+      <li><strong>הרחבה</strong> — הוספת פיצ'רים חדשים בלי לשבור את הקיים</li>
+      <li><strong>ביצועים</strong> — קוד נקי רץ יעיל יותר</li>
+      <li><strong>עבודת צוות</strong> — מפתחים אחרים מבינים את הקוד מיד</li>
+    </ul>
+  </div>
+
+  <div class="explain-card">
+    <h3>
+      <span class="icon" style="background: rgba(167,139,250,0.15);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      </span>
+      מה זה לא?
+    </h3>
+    <p>
+      Refactoring זה <span class="highlight">לא</span> הוספת פיצ'רים חדשים. זה <span class="highlight">לא</span> תיקון באגים. וזה בטח <span class="highlight">לא</span> שכתוב מאפס.
+      זה כמו לסדר דירה — הדירה נשארת אותה דירה, אבל עכשיו הכל במקום ואפשר למצוא כל דבר.
+    </p>
+  </div>
+
+  <div class="analogy-box">
+    <span class="analogy-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#E8734A" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </span>
+    <h3>האנלוגיה הכי טובה</h3>
+    <p>תחשבו על מטבח. יש לכם את כל הכלים, כל המרכיבים, הכל עובד. אבל הסכינים בתוך מגירת הגרביים, התבלינים פזורים על הרצפה, והסירות בארון הנעליים. <span class="highlight">Refactoring</span> זה לשים כל דבר במקום הנכון — בלי לקנות שום דבר חדש.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>לפני ואחרי</h2>
+    <p>דוגמה אמיתית של Refactoring בפעולה</p>
+  </div>
+
+  <div class="comparison-grid">
+    <div class="comparison-card before">
+      <div class="comparison-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6"/><path d="M9 9l6 6"/></svg>
+        לפני Refactoring
+      </div>
+      <div class="code-block" style="border-radius: 0; border: none; border-top: 1px solid var(--border); margin: 0;">
+        <pre><code><span class="keyword">function</span> <span class="function">calc</span>(d) {
+  <span class="keyword">let</span> t = 0;
+  <span class="keyword">for</span> (<span class="keyword">let</span> i = 0; i &lt; d.length; i++) {
+    <span class="keyword">if</span> (d[i].type === <span class="string">'a'</span>) {
+      t += d[i].price * d[i].qty;
+      t -= d[i].price * d[i].qty * 0.1;
+    } <span class="keyword">else if</span> (d[i].type === <span class="string">'b'</span>) {
+      t += d[i].price * d[i].qty;
+      t -= d[i].price * d[i].qty * 0.2;
+    } <span class="keyword">else</span> {
+      t += d[i].price * d[i].qty;
+    }
+  }
+  <span class="keyword">return</span> t;
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="comparison-card after">
+      <div class="comparison-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+        אחרי Refactoring
+      </div>
+      <div class="code-block" style="border-radius: 0; border: none; border-top: 1px solid var(--border); margin: 0;">
+        <pre><code><span class="keyword">const</span> DISCOUNTS = {
+  a: 0.1,
+  b: 0.2,
+};
+
+<span class="keyword">function</span> <span class="function">calculateTotal</span>(items) {
+  <span class="keyword">return</span> items.<span class="function">reduce</span>((total, item) =&gt; {
+    <span class="keyword">const</span> subtotal = item.price * item.qty;
+    <span class="keyword">const</span> discount = DISCOUNTS[item.type] ?? 0;
+    <span class="keyword">return</span> total + subtotal * (1 - discount);
+  }, 0);
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box info" style="margin-top: 20px;">
+    <div class="tip-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    </div>
+    <p>שני הקודים עושים <strong>בדיוק אותו דבר</strong>. אבל הגרסה אחרי ה-Refactoring קריאה יותר, קלה יותר לתחזוקה, ואם ביום מחר תצטרכו להוסיף סוג הנחה חדש — תוסיפו שורה אחת ל-DISCOUNTS במקום עוד else if.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>איך Claude Code עושה Refactoring?</h2>
+    <p>שלושה צעדים פשוטים</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h3>תבקשו ממנו</h3>
+        <p>פשוט תגידו ל-Claude Code מה אתם רוצים. לא צריך לדעת את השם הטכני של הטכניקה.</p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Claude Code Prompt</span>
+            <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+          </div>
+          <pre><code><span class="string">"הפונקציה הזו ארוכה מדי וקשה להבנה. תפרק אותה לפונקציות קטנות יותר."</span></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h3>הוא מנתח את הקוד</h3>
+        <p>Claude Code קורא את הקוד, מבין את ההקשר, מוצא dependencies, ומזהה מה אפשר לשפר בלי לשבור.</p>
+        <div class="tip-box tip">
+          <div class="tip-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+          </div>
+          <p><strong>טיפ:</strong> Claude Code מבין את כל הפרויקט, לא רק את הקובץ הבודד. הוא יעדכן imports, references, ובדיקות בהתאם.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h3>הוא מבצע את השינויים</h3>
+        <p>Claude Code עורך את הקבצים, מריץ את הטסטים כדי לוודא שכלום לא נשבר, ומסביר לכם מה הוא עשה ולמה.</p>
+        <div class="tip-box warning">
+          <div class="tip-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <p><strong>חשוב:</strong> תמיד עשו commit לפני refactoring גדול. ככה תוכלו לחזור אחורה אם משהו לא בסדר.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>5 Patterns שכדאי להכיר</h2>
+    <p>הפרומפטים שיהפכו אתכם למאסטרים של Refactoring</p>
+  </div>
+
+  <div class="patterns-grid">
+    <div class="pattern-card">
+      <div class="pattern-header">
+        <div class="pattern-icon" style="background: rgba(232,115,74,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8734A" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
+        </div>
+        <h3>Extract Function</h3>
+      </div>
+      <p class="pattern-desc">פירוק פונקציה גדולה לכמה פונקציות קטנות, כל אחת עם אחריות ברורה</p>
+      <div class="prompt-example">"תפרק את הפונקציה processOrder לפונקציות קטנות יותר. כל פונקציה צריכה לעשות דבר אחד."</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-header">
+        <div class="pattern-icon" style="background: rgba(96,165,250,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2"><path d="M17 3a2.85 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        </div>
+        <h3>Rename for Clarity</h3>
+      </div>
+      <p class="pattern-desc">שינוי שמות משתנים, פונקציות וקלאסים לשמות שמתארים בדיוק מה הם עושים</p>
+      <div class="prompt-example">"תעבור על הקובץ הזה ותשפר את שמות המשתנים והפונקציות. רוצה שהקוד יקרא כמו סיפור."</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-header">
+        <div class="pattern-icon" style="background: rgba(74,222,128,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3>Remove Duplication</h3>
+      </div>
+      <p class="pattern-desc">איחוד קוד כפול למקום אחד. DRY = Don't Repeat Yourself</p>
+      <div class="prompt-example">"מצא קוד כפול בקבצים האלה ותאחד אותו לפונקציות משותפות."</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-header">
+        <div class="pattern-icon" style="background: rgba(167,139,250,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg>
+        </div>
+        <h3>Simplify Conditionals</h3>
+      </div>
+      <p class="pattern-desc">פישוט תנאים מורכבים. שרשראות if/else ארוכות הופכות ל-maps, early returns, או strategy patterns</p>
+      <div class="prompt-example">"יש לי switch case ענק עם 15 מקרים. תמצא דרך יותר נקייה לכתוב את זה."</div>
+    </div>
+
+    <div class="pattern-card">
+      <div class="pattern-header">
+        <div class="pattern-icon" style="background: rgba(248,113,113,0.15);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F87171" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+        </div>
+        <h3>Remove Dead Code</h3>
+      </div>
+      <p class="pattern-desc">מחיקת קוד מת, פונקציות שלא בשימוש, imports מיותרים, ומשתנים שלא נקראים</p>
+      <div class="prompt-example">"סרוק את הפרויקט ומצא קוד מת — פונקציות, משתנים, ו-imports שלא בשימוש. תמחק הכל."</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>פרומפטים מתקדמים</h2>
+    <p>לשימוש יומיומי ב-Claude Code</p>
+  </div>
+
+  <div class="explain-card">
+    <h3>
+      <span class="icon" style="background: rgba(74,222,128,0.15);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </span>
+      /simplify
+    </h3>
+    <p>Claude Code מגיע עם פקודה מובנית שעושה סריקה מלאה של הקוד ששיניתם, מחפשת שכפולים, בעיות איכות, ומציעה שיפורים. פשוט כתבו <span class="highlight">/simplify</span> בסוף עבודה.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <span>Refactoring Prompts</span>
+      <button class="copy-btn" onclick="copyCode(this)">העתק</button>
+    </div>
+    <pre><code><span class="comment"># ביצועים</span>
+<span class="string">"תנתח את הקוד הזה ותמצא צווארי בקבוק. תשפר ביצועים בלי לשנות את ה-API."</span>
+
+<span class="comment"># Type Safety</span>
+<span class="string">"הוסף TypeScript types לכל הפונקציות בקובץ הזה. תסיק types מהשימוש בפועל."</span>
+
+<span class="comment"># Error Handling</span>
+<span class="string">"שפר את הטיפול בשגיאות. תוסיף try/catch במקומות הנכונים עם הודעות שגיאה ברורות."</span>
+
+<span class="comment"># Testing</span>
+<span class="string">"כתוב טסטים ליחידה הזו ואז תעשה refactor כך שהטסטים ימשיכו לעבור."</span>
+
+<span class="comment"># Full Review</span>
+<span class="string">"תעשה code review מקיף ותתקן את כל מה שאתה מוצא. תחזוקה, קריאות, ביצועים."</span></code></pre>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <h2>שאלות נפוצות</h2>
+    <p>כל מה שרציתם לדעת על Refactoring</p>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      מתי הזמן הנכון לעשות Refactoring?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">הכלל הוא: אם אתם צריכים להוסיף פיצ'ר חדש, ו-Refactoring יהפוך את ההוספה לקלה יותר — תעשו Refactoring קודם. גם כשאתם מתקנים באג ורואים קוד מבולגן באזור — זה זמן טוב לנקות.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      אני מפחד לשבור משהו. מה עושים?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">זו בדיוק הסיבה שיש טסטים ו-git. לפני Refactoring: 1) ודאו שכל הטסטים עוברים, 2) עשו commit, 3) עשו את ה-Refactoring, 4) הריצו טסטים שוב. אם משהו נשבר — git restore ואתם בדיוק איפה שהתחלתם.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Refactoring לעומת Rewrite — מה ההבדל?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">Refactoring הוא שיפור הדרגתי — צעד אחרי צעד, כשבכל שלב הקוד עובד. Rewrite הוא שכתוב מאפס. בדרך כלל Refactoring עדיף כי הוא בטוח יותר, מהיר יותר, ושומר את הידע שנצבר בקוד הקיים.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Claude Code יכול לעשות Refactoring לפרויקט שלם?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">כן, אבל עדיף לעשות את זה בשלבים. תתחילו מקובץ אחד או מודול אחד, תוודאו שהכל עובד, ואז תמשיכו הלאה. Claude Code מבין את ההקשר של כל הפרויקט, אז הוא ידע לעדכן references ו-imports בכל מקום.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      כמה זמן צריך להשקיע ב-Refactoring?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">כלל אצבע: 15-20% מזמן הפיתוח. לא צריך ימים שלמים — 10 דקות של ניקיון אחרי כל פיצ'ר שווים יותר מיום שלם של Refactoring פעם ברבעון. עם Claude Code זה אפילו מהיר יותר.</div></div>
+  </div>
+</section>
+
+<div class="footer">
+  <p>Claude Code Daily Tip by <a href="https://seai.co.il" target="_blank">seai</a></p>
+</div>
+
+<script>
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = 'הועתק!';
+    setTimeout(() => btn.textContent = 'העתק', 2000);
+  });
+}
+</script>
+</body>
+</html>
