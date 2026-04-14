@@ -1,5 +1,20 @@
 {
-  "generated_tips": [],
+  "generated_tips": [
+    {
+      "number": 1,
+      "slug": "tip-1-refactoring",
+      "title": "Code Refactoring עם Claude Code",
+      "date": "2026-04-14",
+      "url": "tips/tip-1-refactoring.html"
+    },
+    {
+      "number": 2,
+      "slug": "tip-2-prompt-engineering",
+      "title": "Prompt Engineering עם Claude Code",
+      "date": "2026-04-15",
+      "url": "tips/tip-2-prompt-engineering.html"
+    }
+  ],
   "categories": [
     "Frontend",
     "Backend / APIs",
@@ -26,5 +41,5 @@
     "Automation & Scripting",
     "Performance Optimization"
   ],
-  "last_generated": null
+  "last_generated": "2026-04-15"
 }
