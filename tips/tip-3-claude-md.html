@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>טיפ #3: CLAUDE.md — הקובץ שהופך את Claude Code לשותף אמיתי</title>
+<meta name="description" content="איך קובץ CLAUDE.md הופך את Claude Code מכלי גנרי לשותף שמכיר את הפרויקט שלך לעומק">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --ink:#111;
+  --ink-soft:#2a2a2a;
+  --ink-muted:#666;
+  --ink-faint:#999;
+  --ink-ghost:#bbb;
+  --surface:#fafaf9;
+  --surface-warm:#f5f4f0;
+  --surface-card:#fff;
+  --accent:#c44b25;
+  --accent-soft:#d4714f;
+  --accent-bg:rgba(196,75,37,.06);
+  --accent-border:rgba(196,75,37,.15);
+  --green-text:#2d7a3a;
+  --green-bg:rgba(45,122,58,.06);
+  --green-border:rgba(45,122,58,.15);
+  --red-text:#b33b3b;
+  --red-bg:rgba(179,59,59,.06);
+  --blue-text:#2563eb;
+  --blue-bg:rgba(37,99,235,.06);
+  --border:#e5e5e0;
+  --border-strong:#d4d4cf;
+  --code-bg:#1a1a2e;
+  --code-surface:#22223a;
+  --radius:8px;
+  --radius-lg:12px;
+}
+
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+
+body{
+  font-family:'Heebo',sans-serif;
+  background:var(--surface);
+  color:var(--ink);
+  line-height:1.8;
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+  -webkit-font-smoothing:antialiased;
+}
+
+::selection{background:rgba(196,75,37,.15);color:var(--ink)}
+
+.reading-progress{
+  position:fixed;top:0;right:0;height:2px;
+  background:var(--accent);
+  width:0%;z-index:1000;
+  transition:width 80ms linear;
+}
+
+.sticky-header{
+  position:fixed;top:0;right:0;left:0;z-index:100;
+  padding:0 24px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(250,250,249,.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  transform:translateY(-100%);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.sticky-header.visible{transform:translateY(0)}
+.sticky-header .h-title{font-size:13px;font-weight:600;color:var(--ink-muted)}
+.sticky-header .h-badge{
+  font-size:11px;font-weight:600;
+  padding:3px 10px;border-radius:4px;
+  background:var(--accent-bg);color:var(--accent);
+  border:1px solid var(--accent-border);
+}
+
+.article-header{
+  max-width:680px;margin:0 auto;
+  padding:80px 24px 48px;
+}
+
+.breadcrumb{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:500;color:var(--ink-faint);
+  margin-bottom:24px;
+  letter-spacing:.2px;
+}
+.breadcrumb a{color:var(--ink-faint);text-decoration:none;transition:color .2s}
+.breadcrumb a:hover{color:var(--accent)}
+.breadcrumb .sep{color:var(--ink-ghost)}
+
+.article-header h1{
+  font-size:clamp(28px,5vw,48px);
+  font-weight:900;line-height:1.2;
+  margin-bottom:16px;
+  letter-spacing:-.5px;
+  color:var(--ink);
+}
+
+.article-header h1 em{
+  font-style:normal;
+  color:var(--accent);
+}
+
+.article-lead{
+  font-size:clamp(16px,2vw,19px);
+  color:var(--ink-muted);
+  max-width:540px;
+  margin-bottom:28px;
+  font-weight:400;
+}
+
+.article-meta{
+  display:flex;align-items:center;gap:16px;
+  flex-wrap:wrap;
+  padding:20px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+
+.meta-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--ink-faint);
+  font-weight:400;
+}
+
+.meta-item svg{width:14px;height:14px;opacity:.55}
+
+.article-body{
+  max-width:680px;margin:0 auto;
+  padding:0 24px 40px;
+}
+
+.section{
+  padding:48px 0;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .5s ease,transform .5s ease;
+}
+
+.section.visible{opacity:1;transform:none}
+
+.section-overline{
+  font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;
+  color:var(--accent);margin-bottom:10px;
+}
+
+.section h2{
+  font-size:clamp(22px,3.5vw,32px);
+  font-weight:800;line-height:1.3;
+  margin-bottom:12px;
+  letter-spacing:-.3px;
+}
+
+.section > p{
+  color:var(--ink-muted);font-size:16px;
+  margin-bottom:28px;max-width:560px;
+}
+
+.callout{
+  background:var(--surface-warm);
+  border:1px solid var(--border);
+  border-right:3px solid var(--accent);
+  border-radius:var(--radius);
+  padding:24px 28px;
+  margin:28px 0;
+}
+
+.callout-title{
+  font-size:14px;font-weight:700;
+  margin-bottom:8px;color:var(--ink);
+  display:flex;align-items:center;gap:8px;
+}
+
+.callout-title svg{width:16px;height:16px;color:var(--accent)}
+
+.callout p{
+  color:var(--ink-muted);font-size:15px;line-height:1.85;
+}
+
+.callout strong{color:var(--ink)}
+
+.info-card{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:28px 24px;
+  margin-bottom:16px;
+  transition:border-color .25s,box-shadow .25s;
+}
+
+.info-card:hover{
+  border-color:var(--border-strong);
+  box-shadow:0 4px 20px rgba(0,0,0,.04);
+}
+
+.info-card .card-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:4px 10px;border-radius:4px;
+  margin-bottom:14px;
+}
+
+.info-card .card-badge.explain{background:var(--blue-bg);color:var(--blue-text)}
+.info-card .card-badge.warn{background:var(--green-bg);color:var(--green-text)}
+
+.info-card h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--ink)}
+.info-card p{color:var(--ink-muted);font-size:15px;line-height:1.85}
+
+.visual-compare{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;
+  margin:28px 0;
+}
+
+.compare-card{
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  border:1px solid var(--border);
+  background:var(--surface-card);
+  transition:transform .3s ease,box-shadow .3s ease;
+}
+
+.compare-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
+}
+
+.compare-card.card-before{border-top:3px solid var(--red-text)}
+.compare-card.card-after{border-top:3px solid var(--green-text)}
+
+.compare-label{
+  padding:14px 20px;
+  display:flex;align-items:center;gap:10px;
+  font-size:14px;font-weight:700;
+  border-bottom:1px solid var(--border);
+}
+
+.compare-label .label-icon{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+.card-before .label-icon{background:var(--red-bg);color:var(--red-text)}
+.card-after .label-icon{background:var(--green-bg);color:var(--green-text)}
+
+.compare-label .label-text{color:var(--ink)}
+
+.compare-body{padding:20px}
+
+.compare-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.compare-item:last-child{border-bottom:none}
+
+.compare-item .item-icon{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+  font-size:12px;
+}
+
+.card-before .item-icon{background:rgba(179,59,59,.08);color:var(--red-text)}
+.card-after .item-icon{background:rgba(45,122,58,.08);color:var(--green-text)}
+
+.compare-item .item-text{font-size:14px;color:var(--ink-muted);line-height:1.75}
+.compare-item .item-text strong{color:var(--ink);font-weight:600}
+
+.compare-summary{
+  margin-top:16px;padding:14px 16px;
+  border-radius:var(--radius);
+  font-size:13px;font-weight:500;
+  text-align:center;
+  line-height:1.7;
+}
+
+.card-before .compare-summary{
+  background:var(--red-bg);color:var(--red-text);
+  border:1px solid rgba(179,59,59,.1);
+}
+
+.card-after .compare-summary{
+  background:var(--green-bg);color:var(--green-text);
+  border:1px solid rgba(45,122,58,.1);
+}
+
+.compare-arrow{
+  display:none;
+  align-items:center;justify-content:center;
+  color:var(--ink-ghost);
+}
+
+.sep-line{
+  max-width:680px;margin:0 auto;
+  height:1px;background:var(--border);
+}
+
+.terminal{
+  border-radius:var(--radius-lg);overflow:hidden;
+  margin:20px 0;
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 4px 24px rgba(0,0,0,.15);
+}
+
+.terminal-bar{
+  background:#1a1a2e;
+  padding:10px 16px;
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.dots{display:flex;gap:6px}
+.dots span{width:10px;height:10px;border-radius:50%}
+.dots span:nth-child(1){background:#ff5f57}
+.dots span:nth-child(2){background:#febc2e}
+.dots span:nth-child(3){background:#28c840}
+
+.tab-name{font-size:11px;color:rgba(255,255,255,.4);font-family:'IBM Plex Mono',monospace}
+
+.terminal-body{
+  background:var(--code-bg);
+  padding:18px 20px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;line-height:2;
+  color:#e0e0e0;
+  overflow-x:auto;
+  position:relative;
+  direction:ltr;
+  text-align:left;
+}
+
+.terminal-body .prompt{color:var(--accent-soft)}
+.terminal-body .comment{color:#666;font-style:italic}
+.terminal-body .cmd{color:#e0e0e0}
+.terminal-body .output{color:#888}
+.terminal-body .highlight{color:#7ee787}
+.terminal-body .key{color:#79c0ff}
+
+.copy-btn{
+  position:absolute;top:12px;left:12px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.5);
+  padding:4px 12px;border-radius:4px;
+  font-size:11px;font-family:'Heebo',sans-serif;
+  cursor:pointer;transition:all .2s;
+}
+
+.copy-btn:hover{background:rgba(255,255,255,.14);color:rgba(255,255,255,.8)}
+.copy-btn.copied{background:rgba(45,122,58,.2);color:#7ee787;border-color:rgba(45,122,58,.3)}
+
+.steps{display:flex;flex-direction:column;gap:0}
+
+.step{
+  display:flex;gap:20px;
+  padding:28px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.step:last-child{border-bottom:none}
+
+.step-marker{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--ink);color:#fff;
+  font-size:13px;font-weight:700;
+  flex-shrink:0;
+}
+
+.step-body{flex:1}
+
+.step-body h4{
+  font-size:16px;font-weight:700;
+  margin-bottom:6px;color:var(--ink);
+}
+
+.step-body p{
+  color:var(--ink-muted);font-size:15px;
+  line-height:1.85;margin-bottom:4px;
+}
+
+.inline-tip{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:20px 24px;
+  border-radius:var(--radius-lg);
+  margin:28px 0;
+  font-size:14px;line-height:1.8;
+}
+
+.inline-tip svg{width:18px;height:18px;flex-shrink:0;margin-top:3px}
+
+.inline-tip.tip-accent{
+  background:var(--accent-bg);
+  border:1px solid var(--accent-border);
+  color:var(--ink-soft);
+}
+
+.inline-tip.tip-accent svg{color:var(--accent)}
+
+.inline-tip.tip-green{
+  background:var(--green-bg);
+  border:1px solid var(--green-border);
+  color:var(--ink-soft);
+}
+
+.inline-tip.tip-green svg{color:var(--green-text)}
+
+.signs-list{display:flex;flex-direction:column;gap:0}
+
+.sign-item{
+  display:flex;align-items:flex-start;gap:18px;
+  padding:22px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.sign-item:last-child{border-bottom:none}
+
+.sign-icon{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-bg);color:var(--accent);
+  font-size:14px;font-weight:700;flex-shrink:0;
+  border:1px solid var(--accent-border);
+}
+
+.sign-item h4{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--ink)}
+.sign-item p{font-size:14px;color:var(--ink-muted);line-height:1.85}
+
+.faq-item{
+  border-bottom:1px solid var(--border);
+}
+
+.faq-q{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 0;
+  cursor:pointer;
+  font-size:15px;font-weight:600;color:var(--ink);
+  transition:color .2s;
+  gap:12px;
+}
+
+.faq-q:hover{color:var(--accent)}
+
+.faq-q .arrow{
+  width:18px;height:18px;flex-shrink:0;
+  transition:transform .3s ease;
+  color:var(--ink-faint);
+}
+
+.faq-item.open .arrow{transform:rotate(180deg)}
+
+.faq-a{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s ease,padding .35s ease;
+}
+
+.faq-item.open .faq-a{max-height:400px}
+
+.faq-a-inner{
+  padding:0 0 20px;
+  font-size:15px;color:var(--ink-muted);
+  line-height:1.85;
+}
+
+.cta-section{
+  max-width:680px;margin:0 auto;
+  padding:48px 24px 32px;
+  text-align:center;
+}
+
+.cta-section h2{
+  font-size:clamp(22px,3.5vw,28px);
+  font-weight:800;margin-bottom:10px;
+}
+
+.cta-section p{
+  color:var(--ink-muted);font-size:15px;
+  margin-bottom:24px;
+}
+
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 32px;
+  background:var(--ink);color:#fff;
+  border-radius:var(--radius);
+  font-size:15px;font-weight:600;
+  text-decoration:none;
+  transition:background .25s,transform .2s;
+  font-family:'Heebo',sans-serif;
+}
+
+.btn-primary svg{width:16px;height:16px}
+.btn-primary:hover{background:#333;transform:translateY(-1px)}
+
+footer{
+  text-align:center;
+  padding:48px 24px;
+  border-top:1px solid var(--border);
+  max-width:680px;margin:0 auto;
+}
+
+.footer-series{font-size:12px;color:var(--ink-ghost);margin-bottom:6px;letter-spacing:.3px}
+
+.footer-credit{
+  font-size:14px;color:var(--ink-muted);font-weight:500;
+}
+
+.footer-credit a{color:var(--accent);text-decoration:none}
+.footer-credit a:hover{text-decoration:underline}
+
+.footer-links{
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  margin-top:12px;
+}
+
+.footer-links a{
+  font-size:13px;color:var(--ink-faint);
+  text-decoration:none;transition:color .2s;
+}
+
+.footer-links a:hover{color:var(--accent)}
+
+.file-tree{
+  background:var(--surface-warm);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:24px 28px;
+  margin:20px 0;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  line-height:2.2;
+  direction:ltr;
+  text-align:left;
+  color:var(--ink-soft);
+}
+
+.file-tree .dir{color:var(--blue-text);font-weight:500}
+.file-tree .file{color:var(--accent);font-weight:500}
+.file-tree .desc{color:var(--ink-faint);font-size:12px}
+
+@media(max-width:640px){
+  .article-header{padding:60px 18px 36px}
+  .article-body{padding:0 18px 32px}
+  .callout{padding:20px 18px}
+  .info-card{padding:22px 18px}
+  .step{gap:14px}
+  .step-marker{width:32px;height:32px;font-size:12px}
+  .terminal-body{font-size:12px;padding:14px 16px}
+  .sign-item{padding:16px;gap:12px}
+  .sign-icon{width:32px;height:32px;font-size:13px}
+  .sticky-header{padding:0 16px;height:48px}
+  .cta-section{padding:36px 18px 24px}
+  .section{padding:36px 0}
+  .visual-compare{grid-template-columns:1fr;gap:16px}
+}
+
+@media(max-width:380px){
+  .article-header h1{font-size:24px}
+  .section h2{font-size:20px}
+}
+
+@media(hover:none){
+  .info-card:hover{box-shadow:none;border-color:var(--border)}
+  .btn-primary:hover{background:var(--ink)}
+  .info-card:active{box-shadow:0 2px 12px rgba(0,0,0,.04)}
+  .btn-primary:active{transform:scale(.97)}
+}
+
+@supports(padding:max(0px)){
+  body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+  footer{padding-bottom:max(48px,env(safe-area-inset-bottom))}
+}
+</style>
+</head>
+<body>
+
+<div class="reading-progress" id="progressBar"></div>
+
+<header class="sticky-header" id="stickyHeader">
+  <span class="h-title">CLAUDE.md עם Claude Code</span>
+  <span class="h-badge">טיפ #3</span>
+</header>
+
+<div class="article-header">
+  <div class="breadcrumb">
+    <a href="https://shaharelhadad.github.io/claude-code-tips/">Claude Code Tips</a>
+    <span class="sep">/</span>
+    <span>טיפ #3</span>
+  </div>
+
+  <h1>הקובץ שהופך את <em>Claude Code</em><br>לשותף שמכיר את הפרויקט</h1>
+
+  <p class="article-lead">
+    בלי CLAUDE.md, אתם מתחילים כל שיחה מאפס.
+    עם CLAUDE.md, Claude Code כבר יודע מה הפרויקט, מה הכללים, ומה לא לגעת בו.
+  </p>
+
+  <div class="article-meta">
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>5 דקות קריאה</span>
+    </div>
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span>מתאים לכולם</span>
+    </div>
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>אפריל 2026</span>
+    </div>
+  </div>
+</div>
+
+<main class="article-body">
+
+  <!-- Section 1: What is CLAUDE.md -->
+  <section class="section" id="what">
+    <div class="section-overline">קודם כל, בואו נבין</div>
+    <h2>מה זה CLAUDE.md?</h2>
+    <p>קובץ אחד פשוט שחוסך לכם שעות של הסברים חוזרים.</p>
+
+    <div class="callout">
+      <div class="callout-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        תחשבו על זה ככה:
+      </div>
+      <p>
+        נכנס אליכם מפתח חדש לצוות. ביום הראשון הוא לא יודע כלום.
+        איזה פריימוורק? איזה סגנון קוד? איפה שמים מה?
+        <br><br>
+        עכשיו דמיינו שנותנים לו <strong>דף אחד</strong> שמסביר הכל: מבנה הפרויקט, הכלים, הכללים, ומה אסור לשנות.
+        פתאום הוא פרודוקטיבי מהיום הראשון.
+        <br><br>
+        <strong>CLAUDE.md הוא הדף הזה.</strong>
+        Claude Code קורא אותו אוטומטית בתחילת כל שיחה, ומיד מבין את ההקשר.
+      </p>
+    </div>
+
+    <div class="info-card">
+      <div class="card-badge explain">הסבר</div>
+      <h3>איפה שמים את הקובץ?</h3>
+      <p>
+        פשוט יוצרים קובץ בשם <strong>CLAUDE.md</strong> בתיקייה הראשית של הפרויקט.
+        Claude Code מזהה אותו אוטומטית. בלי הגדרות, בלי קונפיגורציה.
+        <br><br>
+        אפשר גם לשים CLAUDE.md בתת תיקיות. כל תיקייה יכולה להכיל כללים ספציפיים לחלק הזה של הפרויקט.
+      </p>
+    </div>
+
+    <div class="info-card">
+      <div class="card-badge warn">חשוב להבין</div>
+      <h3>זה לא רק לפרויקטי קוד</h3>
+      <p>
+        CLAUDE.md עובד עם <strong>כל סוג של פרויקט</strong>.
+        אתר שיווקי, סקריפטים, תיקיית מסמכים, כל דבר.
+        המטרה היא לתת ל-Claude Code הקשר כדי שיעבוד חכם יותר.
+      </p>
+    </div>
+  </section>
+
+  <div class="sep-line"></div>
+
+  <!-- Section 2: Before/After -->
+  <section class="section" id="example">
+    <div class="section-overline">ההבדל בפועל</div>
+    <h2>בלי CLAUDE.md מול עם CLAUDE.md</h2>
+    <p>בואו נראה איך CLAUDE.md משנה את חווית העבודה.</p>
+
+    <div class="visual-compare">
+      <div class="compare-card card-before">
+        <div class="compare-label">
+          <div class="label-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <span class="label-text">בלי CLAUDE.md</span>
+        </div>
+        <div class="compare-body">
+          <div class="compare-item">
+            <div class="item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div class="item-text"><strong>כל שיחה מאפס</strong> — צריך להסביר שוב ושוב מה הפרויקט</div>
+          </div>
+          <div class="compare-item">
+            <div class="item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div class="item-text"><strong>סגנון לא עקבי</strong> — פעם TypeScript, פעם JavaScript, כל פעם אחרת</div>
+          </div>
+          <div class="compare-item">
+            <div class="item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+            <div class="item-text"><strong>נוגע בקבצים לא נכונים</strong> — משנה דברים שלא ביקשתם</div>
+          </div>
+          <div class="compare-summary">הרבה סיבובים מיותרים, תוצאות לא צפויות</div>
+        </div>
+      </div>
+
+      <div class="compare-arrow">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+      </div>
+
+      <div class="compare-card card-after">
+        <div class="compare-label">
+          <div class="label-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span class="label-text">עם CLAUDE.md</span>
+        </div>
+        <div class="compare-body">
+          <div class="compare-item">
+            <div class="item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="item-text"><strong>מכיר את הפרויקט מיד</strong> — יודע את המבנה, השפה, והכלים</div>
+          </div>
+          <div class="compare-item">
+            <div class="item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="item-text"><strong>שומר על עקביות</strong> — תמיד לפי הכללים שהגדרתם</div>
+          </div>
+          <div class="compare-item">
+            <div class="item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="item-text"><strong>לא נוגע במה שאסור</strong> — יודע מה לא לשנות</div>
+          </div>
+          <div class="compare-item">
+            <div class="item-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="item-text"><strong>תוצאות מהפעם הראשונה</strong> — בלי הסברים חוזרים</div>
+          </div>
+          <div class="compare-summary">עובד כמו חבר צוות שמכיר את הפרויקט כבר חודשים</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sep-line"></div>
+
+  <!-- Section 3: How to build your CLAUDE.md -->
+  <section class="section" id="how">
+    <div class="section-overline">עכשיו לחלק המעשי</div>
+    <h2>איך בונים CLAUDE.md מושלם</h2>
+    <p>4 שלבים פשוטים שייתנו לכם קובץ CLAUDE.md שעובד.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-marker">1</div>
+        <div class="step-body">
+          <h4>הגדירו את הפרויקט</h4>
+          <p>תתחילו בתיאור קצר של מה הפרויקט, באיזה טכנולוגיה, ומה המטרה.</p>
+
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span class="tab-name">CLAUDE.md</span>
+            </div>
+            <div class="terminal-body">
+              <div><span class="key"># My Project</span></div>
+              <div></div>
+              <div><span class="highlight">This is a Next.js 14 app with TypeScript,</span></div>
+              <div><span class="highlight">Tailwind CSS, and Prisma ORM.</span></div>
+              <div><span class="highlight">It's a SaaS dashboard for managing</span></div>
+              <div><span class="highlight">customer subscriptions.</span></div>
+              <button class="copy-btn" onclick="copyAll(this)">העתק</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-marker">2</div>
+        <div class="step-body">
+          <h4>כתבו את הכללים</h4>
+          <p>מה הסגנון? מה אסור? איזה ספריות מותר להשתמש? הכללים האלה ימנעו טעויות חוזרות.</p>
+
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span class="tab-name">CLAUDE.md</span>
+            </div>
+            <div class="terminal-body">
+              <div><span class="key">## Rules</span></div>
+              <div></div>
+              <div><span class="cmd">- Always use TypeScript, never JavaScript</span></div>
+              <div><span class="cmd">- Use Tailwind for styling, no CSS files</span></div>
+              <div><span class="cmd">- Prefer server components by default</span></div>
+              <div><span class="cmd">- Never modify the database schema</span></div>
+              <div><span class="cmd">  without asking first</span></div>
+              <div><span class="cmd">- Use date-fns, not moment.js</span></div>
+              <button class="copy-btn" onclick="copyAll(this)">העתק</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-marker">3</div>
+        <div class="step-body">
+          <h4>תארו את המבנה</h4>
+          <p>עזרו ל-Claude Code להבין איפה מה נמצא. ככה הוא יפנה לקבצים הנכונים מההתחלה.</p>
+
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span class="tab-name">CLAUDE.md</span>
+            </div>
+            <div class="terminal-body">
+              <div><span class="key">## Project Structure</span></div>
+              <div></div>
+              <div><span class="cmd">src/app/       &rarr; Next.js pages and routes</span></div>
+              <div><span class="cmd">src/lib/       &rarr; Shared utilities</span></div>
+              <div><span class="cmd">src/components/ &rarr; Reusable UI components</span></div>
+              <div><span class="cmd">prisma/        &rarr; Database schema</span></div>
+              <div><span class="cmd">scripts/       &rarr; Build and deploy scripts</span></div>
+              <button class="copy-btn" onclick="copyAll(this)">העתק</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-marker">4</div>
+        <div class="step-body">
+          <h4>הוסיפו פקודות שימושיות</h4>
+          <p>תכתבו את הפקודות שאתם משתמשים בהן. ככה Claude Code יידע איך להריץ, לבדוק, ולבנות.</p>
+
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span class="tab-name">CLAUDE.md</span>
+            </div>
+            <div class="terminal-body">
+              <div><span class="key">## Commands</span></div>
+              <div></div>
+              <div><span class="cmd">npm run dev     &rarr; Start dev server</span></div>
+              <div><span class="cmd">npm run build   &rarr; Production build</span></div>
+              <div><span class="cmd">npm test        &rarr; Run all tests</span></div>
+              <div><span class="cmd">npx prisma db push &rarr; Sync DB schema</span></div>
+              <button class="copy-btn" onclick="copyAll(this)">העתק</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="inline-tip tip-green">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>
+        <strong>טיפ:</strong> אתם יכולים לבקש מ-Claude Code עצמו לבנות לכם CLAUDE.md.
+        פשוט כתבו: <strong>"scan this project and create a CLAUDE.md file with rules and structure"</strong>
+      </span>
+    </div>
+  </section>
+
+  <div class="sep-line"></div>
+
+  <!-- Section 4: Pro tips -->
+  <section class="section" id="pro">
+    <div class="section-overline">לרמה הבאה</div>
+    <h2>5 טריקים שמשדרגים את CLAUDE.md</h2>
+
+    <div class="signs-list">
+      <div class="sign-item">
+        <div class="sign-icon">1</div>
+        <div>
+          <h4>CLAUDE.md בתת תיקיות</h4>
+          <p>שמו CLAUDE.md בתוך src/components/ עם כללי עיצוב ספציפיים. כל תיקייה יכולה להכיל הנחיות משלה. Claude Code ממזג את כולם אוטומטית.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">2</div>
+        <div>
+          <h4>דוגמאות בתוך הכללים</h4>
+          <p>במקום להגיד "use consistent naming", תראו דוגמה: "Name components like UserCard.tsx, not user_card.tsx". דוגמאות שוות יותר מהסברים.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">3</div>
+        <div>
+          <h4>עדכנו אותו תוך כדי עבודה</h4>
+          <p>מצאתם ש-Claude Code עושה טעות חוזרת? תוסיפו כלל חדש ל-CLAUDE.md. ככה הטעות לא תחזור יותר.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">4</div>
+        <div>
+          <h4>הגדירו את גבולות הגזרה</h4>
+          <p>כתבו בפירוש מה אסור לשנות: "Never modify files in /config, /migrations, or .env". ככה הוא לא יגע בקבצים רגישים.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">5</div>
+        <div>
+          <h4>שתפו אותו עם הצוות</h4>
+          <p>CLAUDE.md הוא קובץ רגיל בפרויקט. תעשו לו commit ל-Git. ככה כל הצוות עובד עם אותם כללים ואותו הקשר.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sep-line"></div>
+
+  <!-- Section 5: FAQ -->
+  <section class="section" id="faq">
+    <div class="section-overline">שאלות נפוצות</div>
+    <h2>שאלות ותשובות</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>כמה ארוך צריך להיות CLAUDE.md?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          אין מגבלה, אבל פרקטית 20 עד 50 שורות מספיקות לרוב הפרויקטים.
+          העיקר: כל שורה צריכה להוסיף מידע שימושי. עדיף קצר וממוקד על ארוך ומבולבל.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>מה קורה אם אין CLAUDE.md?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          Claude Code עדיין עובד, אבל הוא צריך לגלות הכל לבד.
+          הוא יקרא קבצים, ינסה להבין את המבנה, ולפעמים יטעה.
+          CLAUDE.md חוסך את כל ההתלבטות הזו.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>עברית או אנגלית ב-CLAUDE.md?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          אנגלית מומלצת כי Claude Code אופטימלי עם אנגלית טכנית.
+          אבל אפשר בהחלט לשלב. למשל, כללים באנגלית ותיאורים בעברית.
+          העיקר שהמידע ברור.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>איך מבקשים מ-Claude Code לבנות CLAUDE.md?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          פשוט תכתבו בתוך Claude Code:
+          "Scan this project and create a comprehensive CLAUDE.md file. Include the tech stack, code style rules, project structure, and common commands."
+          הוא ייצור את הקובץ אוטומטית.
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="cta-section">
+  <h2>רוצים ליצור CLAUDE.md עכשיו?</h2>
+  <p>פתחו את Claude Code בפרויקט שלכם ובקשו ממנו לסרוק ולבנות את הקובץ. זה לוקח דקה אחת.</p>
+  <a href="https://shaharelhadad.github.io/claude-code-guide/" class="btn-primary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+    למדריך ההתקנה המלא
+  </a>
+</div>
+
+<footer>
+  <div class="footer-series">Claude Code Tips — טיפ #3 מתוך 20</div>
+  <div class="footer-credit">
+    by <a href="https://www.instagram.com/shahar_elhadad" target="_blank">Shahar Elhadad</a>
+  </div>
+  <div class="footer-links">
+    <a href="https://shaharelhadad.github.io/claude-code-tips/tips/tip-2-prompt-engineering.html">טיפ קודם</a>
+    <a href="https://shaharelhadad.github.io/claude-code-tips/">כל הטיפים</a>
+  </div>
+</footer>
+
+<script>
+const progressBar = document.getElementById('progressBar');
+const stickyHeader = document.getElementById('stickyHeader');
+
+function updateScroll() {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  const s = window.scrollY;
+  if (h > 0) progressBar.style.width = (s / h * 100) + '%';
+  stickyHeader.classList.toggle('visible', s > 300);
+}
+
+window.addEventListener('scroll', updateScroll, { passive: true });
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+function copyAll(btn) {
+  const body = btn.parentElement;
+  const lines = body.querySelectorAll('div');
+  let text = '';
+  lines.forEach(l => {
+    const t = l.textContent.replace(/^~ /, '').replace(/^# .*/, '').trim();
+    if (t && !t.startsWith('#') && t !== 'העתק') text += t + '\n';
+  });
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    btn.textContent = 'הועתק';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'העתק';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ============================================================
+// ANALYTICS TRACKING
+// ============================================================
+(function() {
+  const SUPABASE_URL = 'https://kqxsighjqyumzzwvzaid.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxeHNpZ2hqcXl1bXp6d3Z6YWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MTc5NjEsImV4cCI6MjA3OTQ5Mzk2MX0.KhO9YOQmp4IfKgWlpN4FvB979Zh7LmWuYnE1e5pWy2w';
+  const TIP_ID    = 'tip-3';
+  const TIP_TITLE = 'CLAUDE.md';
+  const TIP_URL   = window.location.href;
+
+  fetch(`${SUPABASE_URL}/rest/v1/tip_analytics`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({
+      tip_id: TIP_ID,
+      tip_title: TIP_TITLE,
+      tip_url: TIP_URL,
+      screen_width: window.innerWidth
+    })
+  }).catch(function() {});
+})();
+</script>
+</body>
+</html>
