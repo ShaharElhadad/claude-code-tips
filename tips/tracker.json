@@ -13,6 +13,13 @@
       "title": "Prompt Engineering עם Claude Code",
       "date": "2026-04-15",
       "url": "tips/tip-2-prompt-engineering.html"
+    },
+    {
+      "number": 3,
+      "slug": "tip-3-lead-automation",
+      "title": "אוטומציית לידים עם Claude Code",
+      "date": "2026-04-15",
+      "url": "tips/tip-3-lead-automation.html"
     }
   ],
   "categories": [
