@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics | Claude Code Tips</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+/* --- Auth Gate --- */
+.auth-gate{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  background:var(--surface);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+}
+.auth-gate.hidden{display:none}
+.auth-box{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:48px 40px;
+  max-width:380px;
+  width:90%;
+  text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,.08);
+}
+.auth-box .lock-icon{
+  width:48px;height:48px;
+  margin:0 auto 20px;
+  color:var(--ink-muted);
+}
+.auth-box h2{
+  font-size:22px;font-weight:800;margin-bottom:6px;
+}
+.auth-box p{
+  font-size:14px;color:var(--ink-muted);margin-bottom:24px;
+}
+.auth-input{
+  width:100%;
+  padding:12px 16px;
+  border:1px solid var(--border-strong);
+  border-radius:8px;
+  font-size:15px;
+  font-family:'Heebo',sans-serif;
+  text-align:center;
+  outline:none;
+  transition:border-color .2s;
+  direction:ltr;
+}
+.auth-input:focus{border-color:var(--accent)}
+.auth-input.error{border-color:#e53e3e;animation:shake .4s}
+.auth-btn{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  border:none;
+  border-radius:8px;
+  background:var(--ink);
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  font-family:'Heebo',sans-serif;
+  cursor:pointer;
+  transition:all .2s;
+}
+.auth-btn:hover{background:var(--ink-soft)}
+.auth-error-msg{
+  font-size:13px;color:#e53e3e;margin-top:10px;
+  opacity:0;transition:opacity .2s;
+}
+.auth-error-msg.visible{opacity:1}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-8px)}
+  50%{transform:translateX(8px)}
+  75%{transform:translateX(-4px)}
+}
+.dashboard-content{display:none}
+.dashboard-content.visible{display:block}
+
+:root{
+  --ink:#111;
+  --ink-soft:#2a2a2a;
+  --ink-muted:#555;
+  --ink-faint:#888;
+  --ink-ghost:#bbb;
+  --surface:#fafaf9;
+  --surface-warm:#f5f4f0;
+  --surface-card:#fff;
+  --accent:#c44b25;
+  --accent-soft:#d4714f;
+  --accent-bg:rgba(196,75,37,.06);
+  --accent-border:rgba(196,75,37,.15);
+  --green:#2d7a3a;
+  --green-bg:rgba(45,122,58,.06);
+  --green-border:rgba(45,122,58,.12);
+  --blue:#2563eb;
+  --blue-bg:rgba(37,99,235,.06);
+  --border:#e8e8e3;
+  --border-strong:#d4d4cf;
+  --radius:8px;
+  --radius-lg:12px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06);
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Heebo',sans-serif;
+  background:var(--surface);
+  color:var(--ink);
+  line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+
+::selection{background:rgba(196,75,37,.15)}
+
+/* --- Layout --- */
+.page-wrapper{
+  max-width:960px;
+  margin:0 auto;
+  padding:0 24px;
+}
+
+/* --- Header --- */
+.page-header{
+  padding:48px 0 40px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:36px;
+}
+
+.header-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+
+.header-top h1{
+  font-size:clamp(24px,4vw,36px);
+  font-weight:900;
+  letter-spacing:-.5px;
+  line-height:1.2;
+}
+
+.header-top h1 em{
+  font-style:normal;
+  color:var(--accent);
+}
+
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:500;
+  color:var(--ink-faint);
+  text-decoration:none;
+  transition:color .2s;
+}
+.back-link:hover{color:var(--accent)}
+.back-link svg{width:14px;height:14px}
+
+.header-subtitle{
+  font-size:15px;
+  color:var(--ink-muted);
+  margin-top:4px;
+}
+
+/* --- Time filter --- */
+.time-filter{
+  display:flex;
+  gap:4px;
+  background:var(--surface-warm);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:3px;
+  margin-top:20px;
+  width:fit-content;
+}
+
+.time-btn{
+  padding:6px 14px;
+  border:none;
+  background:transparent;
+  border-radius:4px;
+  font-size:13px;
+  font-weight:500;
+  font-family:'Heebo',sans-serif;
+  color:var(--ink-muted);
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.time-btn:hover{color:var(--ink)}
+.time-btn.active{
+  background:var(--surface-card);
+  color:var(--ink);
+  box-shadow:var(--shadow-sm);
+  font-weight:600;
+}
+
+/* --- Stats overview --- */
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:14px;
+  margin-bottom:36px;
+}
+
+.stat-card{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:22px 20px;
+  transition:border-color .2s,box-shadow .2s;
+}
+
+.stat-card:hover{
+  border-color:var(--border-strong);
+  box-shadow:var(--shadow-sm);
+}
+
+.stat-label{
+  font-size:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--ink-faint);
+  margin-bottom:8px;
+}
+
+.stat-value{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:clamp(28px,4vw,36px);
+  font-weight:600;
+  color:var(--ink);
+  line-height:1.1;
+}
+
+.stat-change{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  font-size:12px;
+  font-weight:600;
+  margin-top:8px;
+  padding:2px 8px;
+  border-radius:4px;
+}
+
+.stat-change.up{
+  background:var(--green-bg);
+  color:var(--green);
+}
+
+.stat-change.down{
+  background:rgba(179,59,59,.06);
+  color:#b33b3b;
+}
+
+.stat-change svg{width:12px;height:12px}
+
+/* --- Chart area --- */
+.chart-section{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:24px;
+  margin-bottom:36px;
+}
+
+.chart-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:20px;
+}
+
+.chart-title{
+  font-size:16px;
+  font-weight:700;
+}
+
+.chart-container{
+  position:relative;
+  height:220px;
+  width:100%;
+}
+
+.chart-canvas{
+  width:100%;
+  height:100%;
+}
+
+/* Simple bar chart with CSS */
+.bar-chart{
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+  height:180px;
+  padding-top:10px;
+  border-bottom:1px solid var(--border);
+}
+
+.bar-col{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  min-width:0;
+}
+
+.bar{
+  width:100%;
+  max-width:48px;
+  border-radius:4px 4px 0 0;
+  background:var(--accent);
+  opacity:.85;
+  transition:all .4s cubic-bezier(.22,1,.36,1);
+  min-height:2px;
+  position:relative;
+}
+
+.bar:hover{
+  opacity:1;
+  transform:scaleY(1.02);
+  transform-origin:bottom;
+}
+
+.bar-tooltip{
+  display:none;
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--ink);
+  color:#fff;
+  font-size:11px;
+  font-weight:600;
+  padding:4px 8px;
+  border-radius:4px;
+  white-space:nowrap;
+  font-family:'IBM Plex Mono',monospace;
+}
+
+.bar:hover .bar-tooltip{display:block}
+
+.bar-label{
+  font-size:11px;
+  color:var(--ink-ghost);
+  font-weight:500;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+  text-align:center;
+}
+
+/* --- Tips table --- */
+.tips-section{
+  margin-bottom:48px;
+}
+
+.section-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+
+.section-title{
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:-.2px;
+}
+
+.tips-table{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+}
+
+.table-row{
+  display:grid;
+  grid-template-columns:48px 1fr 100px 100px 100px 52px;
+  align-items:center;
+  padding:14px 20px;
+  gap:12px;
+  border-bottom:1px solid var(--border);
+  transition:background .15s;
+}
+
+.table-row:last-child{border-bottom:none}
+
+.table-row:hover{background:var(--surface-warm)}
+
+.table-header{
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--ink-faint);
+  background:var(--surface-warm);
+  border-bottom:1px solid var(--border);
+}
+
+.table-header:hover{background:var(--surface-warm)}
+
+.tip-rank{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink-faint);
+  text-align:center;
+}
+
+.tip-rank.gold{color:#d4a017}
+.tip-rank.silver{color:#8a8a8a}
+.tip-rank.bronze{color:#b87333}
+
+.tip-info{
+  min-width:0;
+}
+
+.tip-name{
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink);
+  margin-bottom:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.tip-url{
+  font-size:11px;
+  color:var(--ink-ghost);
+  font-family:'IBM Plex Mono',monospace;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.tip-views{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:15px;
+  font-weight:600;
+  color:var(--ink);
+  text-align:center;
+}
+
+.tip-today{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+  font-weight:500;
+  color:var(--ink-muted);
+  text-align:center;
+}
+
+.tip-trend{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  font-size:12px;
+  font-weight:600;
+}
+
+.tip-trend.up{color:var(--green)}
+.tip-trend.down{color:#b33b3b}
+.tip-trend.flat{color:var(--ink-ghost)}
+
+.tip-link{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.tip-link a{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:32px;height:32px;
+  border-radius:6px;
+  color:var(--ink-faint);
+  transition:all .2s;
+}
+
+.tip-link a:hover{
+  background:var(--accent-bg);
+  color:var(--accent);
+}
+
+/* --- Loading --- */
+.loading-state{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:80px 24px;
+  gap:16px;
+}
+
+.loading-spinner{
+  width:28px;height:28px;
+  border:2.5px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.loading-text{
+  font-size:14px;
+  color:var(--ink-faint);
+  font-weight:500;
+}
+
+/* --- Empty state --- */
+.empty-state{
+  text-align:center;
+  padding:64px 24px;
+  color:var(--ink-muted);
+}
+
+.empty-state svg{
+  width:48px;height:48px;
+  color:var(--ink-ghost);
+  margin-bottom:16px;
+}
+
+.empty-state h3{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.empty-state p{
+  font-size:14px;
+  color:var(--ink-faint);
+}
+
+/* --- Footer --- */
+.page-footer{
+  text-align:center;
+  padding:32px 0 48px;
+  border-top:1px solid var(--border);
+}
+
+.footer-text{
+  font-size:13px;
+  color:var(--ink-ghost);
+}
+
+.footer-text a{
+  color:var(--accent);
+  text-decoration:none;
+}
+.footer-text a:hover{text-decoration:underline}
+
+/* --- Responsive --- */
+@media(max-width:768px){
+  .table-row{
+    grid-template-columns:36px 1fr 70px 52px;
+  }
+  .tip-today,.tip-trend{display:none}
+  .page-header{padding:36px 0 28px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-card{padding:16px 14px}
+  .stat-value{font-size:24px}
+}
+
+@media(max-width:480px){
+  .page-wrapper{padding:0 16px}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .time-filter{width:100%}
+  .time-btn{flex:1;text-align:center;padding:6px 8px;font-size:12px}
+  .chart-section{padding:16px}
+  .bar-chart{height:140px}
+}
+
+/* --- Animations --- */
+.fade-in{
+  opacity:0;
+  transform:translateY(12px);
+  animation:fadeIn .5s ease forwards;
+}
+
+@keyframes fadeIn{
+  to{opacity:1;transform:none}
+}
+
+.fade-in:nth-child(1){animation-delay:.05s}
+.fade-in:nth-child(2){animation-delay:.1s}
+.fade-in:nth-child(3){animation-delay:.15s}
+.fade-in:nth-child(4){animation-delay:.2s}
+
+/* --- Last updated pulse --- */
+.last-updated{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--ink-ghost);
+  font-weight:500;
+}
+
+.pulse-dot{
+  width:6px;height:6px;
+  background:var(--green);
+  border-radius:50%;
+  animation:pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:.4}
+}
+
+/* --- Refresh btn --- */
+.refresh-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 14px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:var(--surface-card);
+  font-size:12px;
+  font-weight:600;
+  font-family:'Heebo',sans-serif;
+  color:var(--ink-muted);
+  cursor:pointer;
+  transition:all .2s;
+}
+
+.refresh-btn:hover{
+  border-color:var(--border-strong);
+  color:var(--ink);
+  box-shadow:var(--shadow-sm);
+}
+
+.refresh-btn svg{
+  width:14px;height:14px;
+  transition:transform .3s;
+}
+
+.refresh-btn.spinning svg{
+  animation:spin .6s linear infinite;
+}
+
+/* --- Device breakdown --- */
+.device-bar{
+  display:flex;
+  height:8px;
+  border-radius:4px;
+  overflow:hidden;
+  margin:16px 0 10px;
+}
+
+.device-segment{
+  transition:width .5s cubic-bezier(.22,1,.36,1);
+}
+
+.device-legend{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+}
+
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  color:var(--ink-muted);
+}
+
+.legend-dot{
+  width:8px;height:8px;
+  border-radius:2px;
+}
+</style>
+</head>
+<body>
+
+<!-- Auth Gate -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-box">
+    <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+    <h2>Analytics Dashboard</h2>
+    <p>הדאשבורד מוגן. הזן סיסמה כדי להיכנס.</p>
+    <form id="authForm" onsubmit="return false">
+      <input type="password" class="auth-input" id="authInput" placeholder="סיסמה" autocomplete="off" autofocus>
+      <button type="submit" class="auth-btn">כניסה</button>
+      <div class="auth-error-msg" id="authError">סיסמה שגויה</div>
+    </form>
+  </div>
+</div>
+
+<div class="dashboard-content" id="dashboardContent">
+<div class="page-wrapper">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-top">
+      <div>
+        <a href="https://shaharelhadad.github.io/claude-code-tips/" class="back-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          חזרה לטיפים
+        </a>
+        <h1>ניתוח <em>צפיות</em></h1>
+        <p class="header-subtitle">מעקב אחרי כל הטיפים היומיים שלך</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span class="last-updated">
+          <span class="pulse-dot"></span>
+          <span id="lastUpdated">טוען...</span>
+        </span>
+        <button class="refresh-btn" onclick="refreshData()" id="refreshBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+          רענן
+        </button>
+      </div>
+    </div>
+    <div class="time-filter" id="timeFilter">
+      <button class="time-btn active" data-range="7">7 ימים</button>
+      <button class="time-btn" data-range="30">30 יום</button>
+      <button class="time-btn" data-range="90">90 יום</button>
+      <button class="time-btn" data-range="all">הכל</button>
+    </div>
+  </header>
+
+  <!-- Stats Overview -->
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card fade-in">
+      <div class="stat-label">סה"כ צפיות</div>
+      <div class="stat-value" id="totalViews">--</div>
+      <div class="stat-change up" id="totalChange" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 15l-6-6-6 6"/></svg>
+        <span></span>
+      </div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">היום</div>
+      <div class="stat-value" id="todayViews">--</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">טיפים פעילים</div>
+      <div class="stat-value" id="activeTips">--</div>
+    </div>
+    <div class="stat-card fade-in">
+      <div class="stat-label">ממוצע יומי</div>
+      <div class="stat-value" id="avgDaily">--</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-section fade-in">
+    <div class="chart-header">
+      <span class="chart-title">צפיות לפי יום</span>
+    </div>
+    <div class="bar-chart" id="barChart">
+      <!-- Bars injected by JS -->
+    </div>
+  </div>
+
+  <!-- Device breakdown -->
+  <div class="chart-section fade-in" style="margin-bottom:36px">
+    <div class="chart-header">
+      <span class="chart-title">חלוקה לפי מכשיר</span>
+    </div>
+    <div class="device-bar" id="deviceBar"></div>
+    <div class="device-legend" id="deviceLegend"></div>
+  </div>
+
+  <!-- Tips Table -->
+  <div class="tips-section">
+    <div class="section-header">
+      <h2 class="section-title">טיפים לפי צפיות</h2>
+    </div>
+    <div class="tips-table" id="tipsTable">
+      <div class="table-row table-header">
+        <span style="text-align:center">#</span>
+        <span>טיפ</span>
+        <span style="text-align:center">צפיות</span>
+        <span style="text-align:center">היום</span>
+        <span style="text-align:center">מגמה</span>
+        <span></span>
+      </div>
+      <div class="loading-state" id="tableLoading">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">טוען נתונים...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="page-footer">
+  <div class="page-wrapper">
+    <p class="footer-text">
+      Claude Code Tips &middot; Analytics Dashboard
+      <br>
+      <a href="https://www.instagram.com/shahar_elhadad" target="_blank">By Shahar Elhadad</a>
+    </p>
+  </div>
+</footer>
+</div><!-- /dashboard-content -->
+
+<script src="analytics-config.js"></script>
+<script>
+// ============================================================
+// AUTH GATE
+// ============================================================
+// SHA-256 hash of the password (terminator2026)
+const PASSWORD_HASH = '26fee7904fce701f729adddcd5ceb79cdf8ea9867629e2cb166c956c6ae4c424';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// Check if already authed (session)
+const AUTH_KEY = 'cct_analytics_auth';
+if (sessionStorage.getItem(AUTH_KEY) === 'true') {
+  unlockDashboard();
+}
+
+document.getElementById('authForm').addEventListener('submit', async () => {
+  const input = document.getElementById('authInput');
+  const hash = await sha256(input.value);
+  if (hash === PASSWORD_HASH) {
+    sessionStorage.setItem(AUTH_KEY, 'true');
+    unlockDashboard();
+  } else {
+    input.classList.add('error');
+    document.getElementById('authError').classList.add('visible');
+    setTimeout(() => {
+      input.classList.remove('error');
+    }, 400);
+    setTimeout(() => {
+      document.getElementById('authError').classList.remove('visible');
+    }, 3000);
+  }
+});
+
+function unlockDashboard() {
+  document.getElementById('authGate').classList.add('hidden');
+  const dc = document.getElementById('dashboardContent');
+  dc.classList.add('visible');
+  // Trigger data load after unlock
+  if (typeof loadAnalytics === 'function') loadAnalytics();
+}
+// ============================================================
+// CONFIG — loaded from analytics-config.js (gitignored)
+// Copy analytics-config.example.js to analytics-config.js
+// and fill in your real Supabase credentials.
+// ============================================================
+const _cfg = window.__ANALYTICS_CONFIG__ || {};
+const SUPABASE_URL  = _cfg.SUPABASE_URL || '';
+const SUPABASE_KEY  = _cfg.SUPABASE_KEY || '';
+const TABLE         = 'tip_analytics';
+const TIPS_BASE_URL = 'https://shaharelhadad.github.io/claude-code-tips/tips/';
+
+// Known tips registry
+const TIPS_REGISTRY = {
+  'tip-1': { title: 'Code Refactoring עם Claude Code', file: 'tip-1-refactoring.html' }
+};
+
+// ============================================================
+// SUPABASE HELPERS
+// ============================================================
+async function supaFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': options.prefer || 'return=representation',
+      ...options.headers
+    },
+    ...options
+  });
+  if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function fetchAllViews() {
+  return supaFetch(`${TABLE}?select=tip_id,tip_title,tip_url,screen_width,created_at&order=created_at.desc&limit=10000`);
+}
+
+// ============================================================
+// DATA PROCESSING
+// ============================================================
+let allData = [];
+let currentRange = 7;
+
+function filterByDays(data, days) {
+  if (days === 'all') return data;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  return data.filter(d => new Date(d.created_at) >= cutoff);
+}
+
+function getToday(data) {
+  const today = new Date().toISOString().split('T')[0];
+  return data.filter(d => d.created_at.startsWith(today));
+}
+
+function groupByTip(data) {
+  const groups = {};
+  data.forEach(d => {
+    if (!groups[d.tip_id]) {
+      groups[d.tip_id] = {
+        tip_id: d.tip_id,
+        title: d.tip_title || TIPS_REGISTRY[d.tip_id]?.title || d.tip_id,
+        url: d.tip_url || (TIPS_REGISTRY[d.tip_id] ? TIPS_BASE_URL + TIPS_REGISTRY[d.tip_id].file : ''),
+        total: 0,
+        today: 0,
+        views: []
+      };
+    }
+    groups[d.tip_id].total++;
+    groups[d.tip_id].views.push(d);
+  });
+  // Count today
+  const today = new Date().toISOString().split('T')[0];
+  Object.values(groups).forEach(g => {
+    g.today = g.views.filter(v => v.created_at.startsWith(today)).length;
+  });
+  return Object.values(groups).sort((a, b) => b.total - a.total);
+}
+
+function groupByDay(data, days) {
+  const map = {};
+  const numDays = days === 'all' ? 30 : Math.min(days, 30);
+
+  // Initialize days
+  for (let i = numDays - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    map[key] = 0;
+  }
+
+  data.forEach(d => {
+    const key = d.created_at.split('T')[0];
+    if (map.hasOwnProperty(key)) map[key]++;
+  });
+
+  return Object.entries(map).map(([date, count]) => ({ date, count }));
+}
+
+function getDeviceBreakdown(data) {
+  let mobile = 0, tablet = 0, desktop = 0;
+  data.forEach(d => {
+    const w = d.screen_width || 1200;
+    if (w < 640) mobile++;
+    else if (w < 1024) tablet++;
+    else desktop++;
+  });
+  const total = data.length || 1;
+  return {
+    mobile: { count: mobile, pct: Math.round(mobile / total * 100) },
+    tablet: { count: tablet, pct: Math.round(tablet / total * 100) },
+    desktop: { count: desktop, pct: Math.round(desktop / total * 100) }
+  };
+}
+
+function getTrend(views, days) {
+  const now = new Date();
+  const mid = new Date();
+  mid.setDate(mid.getDate() - Math.floor(days / 2));
+  const start = new Date();
+  start.setDate(start.getDate() - days);
+
+  const recent = views.filter(v => new Date(v.created_at) >= mid).length;
+  const older = views.filter(v => {
+    const d = new Date(v.created_at);
+    return d >= start && d < mid;
+  }).length;
+
+  if (older === 0 && recent === 0) return { dir: 'flat', pct: 0 };
+  if (older === 0) return { dir: 'up', pct: 100 };
+  const change = Math.round(((recent - older) / older) * 100);
+  return { dir: change > 0 ? 'up' : change < 0 ? 'down' : 'flat', pct: Math.abs(change) };
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function renderStats(data) {
+  const filtered = filterByDays(data, currentRange);
+  const todayData = getToday(data);
+  const tips = groupByTip(filtered);
+  const days = groupByDay(filtered, currentRange);
+
+  const totalDays = currentRange === 'all' ? 30 : currentRange;
+  const avgDaily = filtered.length > 0 ? (filtered.length / totalDays).toFixed(1) : '0';
+
+  document.getElementById('totalViews').textContent = filtered.length.toLocaleString();
+  document.getElementById('todayViews').textContent = todayData.length.toLocaleString();
+  document.getElementById('activeTips').textContent = tips.length.toLocaleString();
+  document.getElementById('avgDaily').textContent = avgDaily;
+
+  renderBarChart(days);
+  renderDeviceBreakdown(filtered);
+  renderTipsTable(tips);
+
+  document.getElementById('lastUpdated').textContent = 'עודכן ' + new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderBarChart(days) {
+  const chart = document.getElementById('barChart');
+  const maxCount = Math.max(...days.map(d => d.count), 1);
+
+  chart.innerHTML = days.map(d => {
+    const height = Math.max((d.count / maxCount) * 160, 2);
+    const dateObj = new Date(d.date + 'T12:00:00');
+    const label = dateObj.toLocaleDateString('he-IL', { day: 'numeric', month: 'short' });
+    const isToday = d.date === new Date().toISOString().split('T')[0];
+    return `
+      <div class="bar-col">
+        <div class="bar" style="height:${height}px;${isToday ? 'opacity:1;background:var(--accent)' : ''}">
+          <span class="bar-tooltip">${d.count} צפיות</span>
+        </div>
+        <span class="bar-label">${label}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDeviceBreakdown(data) {
+  const devices = getDeviceBreakdown(data);
+  const bar = document.getElementById('deviceBar');
+  const legend = document.getElementById('deviceLegend');
+
+  const colors = {
+    mobile: 'var(--accent)',
+    tablet: 'var(--blue)',
+    desktop: '#2d7a3a'
+  };
+
+  const labels = {
+    mobile: 'מובייל',
+    tablet: 'טאבלט',
+    desktop: 'מחשב'
+  };
+
+  bar.innerHTML = Object.entries(devices).map(([key, val]) =>
+    `<div class="device-segment" style="width:${val.pct}%;background:${colors[key]}"></div>`
+  ).join('');
+
+  legend.innerHTML = Object.entries(devices).map(([key, val]) =>
+    `<span class="legend-item">
+      <span class="legend-dot" style="background:${colors[key]}"></span>
+      ${labels[key]} ${val.pct}% (${val.count})
+    </span>`
+  ).join('');
+}
+
+function renderTipsTable(tips) {
+  const table = document.getElementById('tipsTable');
+  const loading = document.getElementById('tableLoading');
+  if (loading) loading.remove();
+
+  // Keep header
+  const header = table.querySelector('.table-header');
+  table.innerHTML = '';
+  table.appendChild(header);
+
+  if (tips.length === 0) {
+    table.innerHTML += `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 17H5a2 2 0 00-2 2 2 2 0 002 2h2a2 2 0 002-2zm12-2h-4a2 2 0 00-2 2 2 2 0 002 2h2a2 2 0 002-2z"/>
+          <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+        <h3>אין נתונים עדיין</h3>
+        <p>ברגע שמישהו יצפה בטיפ, הנתונים יופיעו כאן</p>
+      </div>
+    `;
+    return;
+  }
+
+  tips.forEach((tip, i) => {
+    const trend = getTrend(tip.views, currentRange === 'all' ? 30 : currentRange);
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    const trendIcon = trend.dir === 'up'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M18 15l-6-6-6 6"/></svg>'
+      : trend.dir === 'down'
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M6 9l6 6 6-6"/></svg>'
+      : '';
+
+    const row = document.createElement('div');
+    row.className = 'table-row fade-in';
+    row.style.animationDelay = `${i * .05}s`;
+    row.innerHTML = `
+      <span class="tip-rank ${rankClass}">${i + 1}</span>
+      <div class="tip-info">
+        <div class="tip-name">${tip.title}</div>
+        <div class="tip-url">${tip.tip_id}</div>
+      </div>
+      <span class="tip-views">${tip.total.toLocaleString()}</span>
+      <span class="tip-today">${tip.today}</span>
+      <span class="tip-trend ${trend.dir}">
+        ${trendIcon}
+        ${trend.pct > 0 ? trend.pct + '%' : '--'}
+      </span>
+      <span class="tip-link">
+        <a href="${tip.url}" target="_blank" title="צפה בטיפ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </span>
+    `;
+    table.appendChild(row);
+  });
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+async function refreshData() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+
+  try {
+    allData = await fetchAllViews();
+    renderStats(allData);
+  } catch (e) {
+    console.error('Failed to fetch data:', e);
+  } finally {
+    setTimeout(() => btn.classList.remove('spinning'), 600);
+  }
+}
+
+// Time filter buttons
+document.getElementById('timeFilter').addEventListener('click', (e) => {
+  const btn = e.target.closest('.time-btn');
+  if (!btn) return;
+
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const range = btn.dataset.range;
+  currentRange = range === 'all' ? 'all' : parseInt(range);
+  renderStats(allData);
+});
+
+// ============================================================
+// INIT (called after auth)
+// ============================================================
+let analyticsLoaded = false;
+async function loadAnalytics() {
+  if (analyticsLoaded) return;
+  analyticsLoaded = true;
+  try {
+    allData = await fetchAllViews();
+    renderStats(allData);
+  } catch (e) {
+    console.error('Failed to load analytics:', e);
+    document.getElementById('tableLoading').innerHTML = `
+      <div class="empty-state">
+        <h3>שגיאה בטעינת הנתונים</h3>
+        <p>נסה לרענן את הדף</p>
+      </div>
+    `;
+  }
+}
+
+// Auto-load if already authenticated
+if (sessionStorage.getItem('cct_analytics_auth') === 'true') {
+  loadAnalytics();
+}
+</script>
+
+</body>
+</html>
