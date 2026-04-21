@@ -1,0 +1,8 @@
+# Environment and secrets
+.env
+.env.local
+analytics-config.js
+
+# OS files
+.DS_Store
+Thumbs.db
