@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Zoom Q&A — Claude Code שאלות ותשובות</title>
+<meta name="description" content="מפגש Zoom פתוח לשאלות ותשובות על Claude Code. יום רביעי 29.4 בשעה 19:00. לכל הרמות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --orange: #E8734A;
+  --orange-light: #F4A261;
+  --bg-dark: #0D0D0D;
+  --bg-card: #1A1A1A;
+  --bg-card-hover: #222;
+  --border: #333;
+  --text: #F5F5F5;
+  --text-muted: #999;
+  --text-dim: #666;
+  --green: #4ADE80;
+  --blue: #60A5FA;
+  --purple: #A78BFA;
+  --code-bg: #161616;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Heebo', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ========== HERO ========== */
+.hero {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 50% 50%, rgba(232,115,74,0.08) 0%, transparent 50%);
+  animation: pulse-bg 8s ease-in-out infinite;
+}
+
+@keyframes pulse-bg {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hero h1 {
+  font-size: clamp(32px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero h1 span {
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: clamp(16px, 2.5vw, 22px);
+  color: var(--text-muted);
+  max-width: 600px;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+  font-weight: 300;
+}
+
+.hero-date {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--text-dim);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: bounce 2s infinite;
+  z-index: 1;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+
+.scroll-hint svg { width: 20px; height: 20px; }
+
+/* ========== SECTIONS ========== */
+.section {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 80px 20px;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.section h2 {
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 800;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.section > p {
+  color: var(--text-muted);
+  font-size: 17px;
+  margin-bottom: 40px;
+  max-width: 650px;
+}
+
+/* ========== CARDS ========== */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.card-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.card-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--orange);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-size: 24px;
+}
+
+.card-icon.orange { background: rgba(232,115,74,0.15); color: var(--orange); }
+.card-icon.green { background: rgba(74,222,128,0.15); color: var(--green); }
+.card-icon.blue { background: rgba(96,165,250,0.15); color: var(--blue); }
+.card-icon.purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+
+.card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.card p {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ========== EVENT INFO ========== */
+.event-details {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.event-details::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(232,115,74,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.event-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.event-row:last-child {
+  margin-bottom: 0;
+}
+
+.event-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(232,115,74,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.event-icon svg {
+  width: 22px;
+  height: 22px;
+  color: var(--orange);
+}
+
+.event-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 2px;
+}
+
+.event-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* ========== COUNTDOWN ========== */
+.countdown-wrap {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.countdown {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.countdown-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 24px;
+  min-width: 80px;
+}
+
+.countdown-num {
+  font-size: 36px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.countdown-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ========== TIP BOX ========== */
+.tip-box {
+  background: rgba(232,115,74,0.08);
+  border: 1px solid rgba(232,115,74,0.2);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tip-box svg {
+  width: 20px;
+  height: 20px;
+  color: var(--orange);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.tip-box p {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.tip-box strong {
+  color: var(--orange);
+}
+
+/* ========== FAQ ========== */
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.faq-q {
+  padding: 20px 24px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.faq-q:hover { color: var(--orange); }
+
+.faq-q svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.faq-item.open .faq-q svg {
+  transform: rotate(180deg);
+}
+
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.faq-item.open .faq-a {
+  max-height: 500px;
+}
+
+.faq-a-inner {
+  padding: 0 24px 20px;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ========== CTA ========== */
+.cta-section {
+  text-align: center;
+  padding: 80px 20px;
+  position: relative;
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(232,115,74,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.cta-section h2 {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.cta-section p {
+  color: var(--text-muted);
+  font-size: 17px;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: #fff;
+  border: none;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(232,115,74,0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.btn-calendar {
+  background: rgba(96,165,250,0.15);
+  color: var(--blue);
+  border: 1px solid rgba(96,165,250,0.3);
+}
+
+.btn-calendar:hover {
+  background: rgba(96,165,250,0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(96,165,250,0.2);
+}
+
+/* ========== MESSAGE BANNER ========== */
+.message-banner {
+  background: linear-gradient(135deg, rgba(232,115,74,0.1), rgba(244,162,97,0.05));
+  border: 1px solid rgba(232,115,74,0.2);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.message-banner h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--orange);
+}
+
+.message-banner p {
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 550px;
+  margin: 0 auto;
+}
+
+/* ========== TOPICS LIST ========== */
+.topic-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.topic-item:hover {
+  border-color: var(--orange);
+}
+
+.topic-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.topic-text h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.topic-text p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ========== LEVEL BADGES ========== */
+.level-badges {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
+.level-badge {
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.level-badge.beginner {
+  background: rgba(74,222,128,0.15);
+  color: var(--green);
+  border: 1px solid rgba(74,222,128,0.3);
+}
+
+.level-badge.intermediate {
+  background: rgba(96,165,250,0.15);
+  color: var(--blue);
+  border: 1px solid rgba(96,165,250,0.3);
+}
+
+.level-badge.advanced {
+  background: rgba(167,139,250,0.15);
+  color: var(--purple);
+  border: 1px solid rgba(167,139,250,0.3);
+}
+
+/* ========== FOOTER ========== */
+footer {
+  text-align: center;
+  padding: 40px 20px;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+footer a {
+  color: var(--orange);
+  text-decoration: none;
+}
+
+footer a:hover { text-decoration: underline; }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 640px) {
+  .card-grid.cols-2,
+  .card-grid.cols-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .countdown { gap: 8px; }
+  .countdown-item { padding: 12px 16px; min-width: 64px; }
+  .countdown-num { font-size: 28px; }
+  .event-details { padding: 24px; }
+  .section { padding: 60px 16px; }
+  .event-row { gap: 12px; }
+}
+
+@media (hover: none) {
+  .card:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+    Claude Code Q&A Live
+  </div>
+  <div class="hero-date">יום רביעי 29 באפריל 2026 | 19:00 — 20:00</div>
+  <h1>שאלות <span>ותשובות</span><br>על Claude Code</h1>
+  <p>אחרי שבוע בלי טיפ יומי, החלטנו לעשות משהו יותר טוב. שעה שלמה שבה אתם שואלים והכל נענה. בלי מצגות, בלי הרצאות. רק אתם והתשובות.</p>
+  <div class="scroll-hint">
+    גלול למטה
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+  </div>
+</div>
+
+<!-- MESSAGE -->
+<div class="section">
+  <div class="message-banner">
+    <h3>למה Q&A ולא טיפ?</h3>
+    <p>אחרי שבוע של טיפים יומיים שמתם לב שהשאלות רק גדלו. אז במקום לנחש מה אתם צריכים, החלטנו לפתוח מיקרופון ולענות על כל מה שהייתם רוצים לדעת. שעה, בלי פילטרים, כל שאלה לגיטימית.</p>
+  </div>
+
+  <div class="section-label">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+    פרטי האירוע
+  </div>
+  <h2>מתי ואיפה?</h2>
+
+  <div class="event-details">
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div>
+        <div class="event-label">תאריך</div>
+        <div class="event-value">יום רביעי, 29 באפריל 2026</div>
+      </div>
+    </div>
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div>
+        <div class="event-label">שעה</div>
+        <div class="event-value">19:00 — 20:00 (שעון ישראל)</div>
+      </div>
+    </div>
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      </div>
+      <div>
+        <div class="event-label">פלטפורמה</div>
+        <div class="event-value">Zoom (קישור יישלח למשתתפים)</div>
+      </div>
+    </div>
+    <div class="event-row">
+      <div class="event-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div>
+        <div class="event-label">רמה</div>
+        <div class="event-value">כל הרמות. מתחילים עד מתקדמים.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="level-badges">
+    <span class="level-badge beginner">מתחילים</span>
+    <span class="level-badge intermediate">בינוניים</span>
+    <span class="level-badge advanced">מתקדמים</span>
+  </div>
+
+  <div class="tip-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <p><strong>אין שאלה קטנה מדי.</strong> לא משנה אם התקנת את Claude Code אתמול או שאתה משתמש בו כבר חודשים. כל שאלה לגיטימית, כל תשובה תהיה מותאמת לרמה שלך.</p>
+  </div>
+</div>
+
+<!-- COUNTDOWN -->
+<div class="section" style="padding-top: 0;">
+  <div class="countdown-wrap">
+    <div class="section-label" style="justify-content: center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      ספירה לאחור
+    </div>
+    <h2 style="text-align: center; margin-bottom: 24px;">עוד כמה נשאר?</h2>
+    <div class="countdown" id="countdown">
+      <div class="countdown-item">
+        <div class="countdown-num" id="days">--</div>
+        <div class="countdown-label">ימים</div>
+      </div>
+      <div class="countdown-item">
+        <div class="countdown-num" id="hours">--</div>
+        <div class="countdown-label">שעות</div>
+      </div>
+      <div class="countdown-item">
+        <div class="countdown-num" id="minutes">--</div>
+        <div class="countdown-label">דקות</div>
+      </div>
+      <div class="countdown-item">
+        <div class="countdown-num" id="seconds">--</div>
+        <div class="countdown-label">שניות</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 32px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+    <a href="#" class="btn btn-calendar" onclick="addToGoogleCalendar(); return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Google Calendar
+    </a>
+    <a href="#" class="btn btn-calendar" onclick="downloadICS(); return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Apple / Outlook (.ics)
+    </a>
+  </div>
+</div>
+
+<!-- TOPICS -->
+<div class="section">
+  <div class="section-label">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    נושאים
+  </div>
+  <h2>על מה אפשר לשאול?</h2>
+  <p>הכל. באמת הכל. אבל הנה כמה נושאים שעולים הכי הרבה:</p>
+
+  <div class="topic-item">
+    <div class="topic-num">1</div>
+    <div class="topic-text">
+      <h4>התקנה והגדרות</h4>
+      <p>איך מתקינים, איך מגדירים CLAUDE.md, permissions, hooks, settings</p>
+    </div>
+  </div>
+
+  <div class="topic-item">
+    <div class="topic-num">2</div>
+    <div class="topic-text">
+      <h4>כתיבת Prompts נכונה</h4>
+      <p>איך לתת הוראות ברורות, מתי להיות ספציפי ומתי לתת חופש, דפוסים שעובדים</p>
+    </div>
+  </div>
+
+  <div class="topic-item">
+    <div class="topic-num">3</div>
+    <div class="topic-text">
+      <h4>עבודה עם פרויקטים גדולים</h4>
+      <p>refactoring, ניווט בקוד, עבודה עם כמה קבצים, agent mode</p>
+    </div>
+  </div>
+
+  <div class="topic-item">
+    <div class="topic-num">4</div>
+    <div class="topic-text">
+      <h4>אוטומציות ו-workflows</h4>
+      <p>Git hooks, CI/CD, scripts, cron, שילוב עם כלים אחרים</p>
+    </div>
+  </div>
+
+  <div class="topic-item">
+    <div class="topic-num">5</div>
+    <div class="topic-text">
+      <h4>טיפים מתקדמים</h4>
+      <p>MCP servers, custom skills, multi-agent, context management, performance</p>
+    </div>
+  </div>
+
+  <div class="topic-item">
+    <div class="topic-num">6</div>
+    <div class="topic-text">
+      <h4>שאלה שלך</h4>
+      <p>משהו אחר לגמרי? מעולה. פשוט תשאל ונענה.</p>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT TO EXPECT -->
+<div class="section">
+  <div class="section-label">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+    מה לצפות
+  </div>
+  <h2>איך זה יעבוד?</h2>
+
+  <div class="card-grid cols-3">
+    <div class="card">
+      <div class="card-icon orange">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      </div>
+      <h3>שואלים</h3>
+      <p>אתם מקלידים שאלה בצ'אט או פותחים מיקרופון ושואלים ישירות. כל שאלה תתקבל.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon green">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+      </div>
+      <h3>מדגימים</h3>
+      <p>לא רק מסבירים, מראים. Live demo על שאלות שדורשות הדגמה ישירה בקוד.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon blue">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      </div>
+      <h3>מסכמים</h3>
+      <p>אחרי המפגש תקבלו סיכום כתוב עם כל השאלות, התשובות, והקישורים שעלו.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="section">
+  <div class="section-label">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+    שאלות נפוצות
+  </div>
+  <h2>FAQ</h2>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      צריך להכין משהו מראש?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">לא חובה. אפשר לבוא עם שאלות מוכנות ואפשר לבוא ולהקשיב. אם יש לך שאלה ספציפית, עדיף לחשוב עליה מראש כדי שנוכל לתת תשובה מדויקת יותר.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      אני ממש מתחיל, מתאים לי?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">בהחלט. אין שאלה בסיסית מדי. אם התקנת Claude Code אתמול ולא יודע מאיפה להתחיל, זה בדיוק המקום. כל תשובה תהיה מותאמת לרמה שלך.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      האם יהיה הקלטה?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">כן. המפגש יוקלט וישלח לכל מי שנרשם, גם אם לא הספיק להגיע. בנוסף, יפורסם סיכום כתוב עם כל השאלות והתשובות.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      צריך לפתוח מצלמה?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">לא חובה בכלל. אפשר להשתתף רק עם טקסט בצ'אט, רק עם מיקרופון, או עם מצלמה. איך שנוח לך.</div></div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      אפשר לשאול על פרויקט ספציפי שלי?
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div class="faq-a"><div class="faq-a-inner">כן, אפשר לשתף מסך ולהראות את הבעיה. נעזור לך בזמן אמת. רק שים לב לא לחשוף מידע רגיש על המסך.</div></div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>נתראה ביום רביעי?</h2>
+  <p>שעה אחת שיכולה לחסוך לך שבועות של ניסוי וטעייה.</p>
+  <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+    <a href="#" class="btn btn-primary" onclick="addToGoogleCalendar(); return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      הוספה ליומן
+    </a>
+    <a href="https://shaharelhadad.github.io/claude-code-tips/" class="btn btn-secondary" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      הטיפים היומיים
+    </a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>נוצר על ידי <a href="https://wa.me/972525809842" target="_blank">seai</a> | The Terminator AI</p>
+  <p style="margin-top: 8px;">Claude Code Q&A Live | 29 באפריל 2026</p>
+</footer>
+
+<script>
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// Countdown
+const eventDate = new Date('2026-04-29T19:00:00+03:00');
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = eventDate - now;
+
+  if (diff <= 0) {
+    document.getElementById('days').textContent = '0';
+    document.getElementById('hours').textContent = '0';
+    document.getElementById('minutes').textContent = '0';
+    document.getElementById('seconds').textContent = '0';
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('days').textContent = days;
+  document.getElementById('hours').textContent = hours;
+  document.getElementById('minutes').textContent = minutes;
+  document.getElementById('seconds').textContent = seconds;
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// Google Calendar
+function addToGoogleCalendar() {
+  const title = encodeURIComponent('Claude Code Q&A Live');
+  const details = encodeURIComponent('מפגש Zoom פתוח לשאלות ותשובות על Claude Code. כל הרמות. כל שאלה לגיטימית.\n\nקישור ל-Zoom יישלח לפני המפגש.');
+  const location = encodeURIComponent('Zoom');
+  const start = '20260429T160000Z';
+  const end = '20260429T170000Z';
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}&dates=${start}/${end}`;
+  window.open(url, '_blank');
+}
+
+// ICS Download
+function downloadICS() {
+  const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//seai//Claude Code Q&A//HE
+BEGIN:VEVENT
+DTSTART:20260429T160000Z
+DTEND:20260429T170000Z
+SUMMARY:Claude Code Q&A Live
+DESCRIPTION:מפגש Zoom פתוח לשאלות ותשובות על Claude Code. כל הרמות. כל שאלה לגיטימית.\\nקישור ל-Zoom יישלח לפני המפגש.
+LOCATION:Zoom
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`;
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'claude-code-qa-live.ics';
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+</script>
+
+</body>
+</html>
