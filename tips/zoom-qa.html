@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Zoom Q&A — Claude Code שאלות ותשובות</title>
+<meta name="description" content="מפגש Zoom פתוח לשאלות ותשובות על Claude Code. יום רביעי 29.4 בשעה 19:00. לכל הרמות.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --ink:#111;
+  --ink-soft:#2a2a2a;
+  --ink-muted:#666;
+  --ink-faint:#999;
+  --ink-ghost:#bbb;
+  --surface:#fafaf9;
+  --surface-warm:#f5f4f0;
+  --surface-card:#fff;
+  --accent:#c44b25;
+  --accent-soft:#d4714f;
+  --accent-bg:rgba(196,75,37,.06);
+  --accent-border:rgba(196,75,37,.15);
+  --green-text:#2d7a3a;
+  --green-bg:rgba(45,122,58,.06);
+  --green-border:rgba(45,122,58,.15);
+  --red-text:#b33b3b;
+  --red-bg:rgba(179,59,59,.06);
+  --blue-text:#2563eb;
+  --blue-bg:rgba(37,99,235,.06);
+  --border:#e5e5e0;
+  --border-strong:#d4d4cf;
+  --code-bg:#1a1a2e;
+  --code-surface:#22223a;
+  --radius:8px;
+  --radius-lg:12px;
+}
+
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+
+body{
+  font-family:'Heebo',sans-serif;
+  background:var(--surface);
+  color:var(--ink);
+  line-height:1.8;
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+  -webkit-font-smoothing:antialiased;
+}
+
+::selection{background:rgba(196,75,37,.15);color:var(--ink)}
+
+/* --- Reading progress --- */
+.reading-progress{
+  position:fixed;top:0;right:0;height:2px;
+  background:var(--accent);
+  width:0%;z-index:1000;
+  transition:width 80ms linear;
+}
+
+/* --- Sticky header --- */
+.sticky-header{
+  position:fixed;top:0;right:0;left:0;z-index:100;
+  padding:0 24px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(250,250,249,.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  transform:translateY(-100%);
+  transition:transform .35s cubic-bezier(.22,1,.36,1);
+}
+.sticky-header.visible{transform:translateY(0)}
+.sticky-header .h-title{font-size:13px;font-weight:600;color:var(--ink-muted)}
+.sticky-header .h-badge{
+  font-size:11px;font-weight:600;
+  padding:3px 10px;border-radius:4px;
+  background:var(--accent-bg);color:var(--accent);
+  border:1px solid var(--accent-border);
+}
+
+/* --- Article header --- */
+.article-header{
+  max-width:680px;margin:0 auto;
+  padding:80px 24px 48px;
+}
+
+.breadcrumb{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:500;color:var(--ink-faint);
+  margin-bottom:24px;
+  letter-spacing:.2px;
+}
+.breadcrumb a{color:var(--ink-faint);text-decoration:none;transition:color .2s}
+.breadcrumb a:hover{color:var(--accent)}
+.breadcrumb .sep{color:var(--ink-ghost)}
+
+.article-header h1{
+  font-size:clamp(28px,5vw,48px);
+  font-weight:900;line-height:1.2;
+  margin-bottom:16px;
+  letter-spacing:-.5px;
+  color:var(--ink);
+}
+
+.article-header h1 em{
+  font-style:normal;
+  color:var(--accent);
+}
+
+.article-lead{
+  font-size:clamp(16px,2vw,19px);
+  color:var(--ink-muted);
+  max-width:540px;
+  margin-bottom:28px;
+  font-weight:400;
+}
+
+.article-meta{
+  display:flex;align-items:center;gap:16px;
+  flex-wrap:wrap;
+  padding:20px 0;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+
+.meta-item{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--ink-faint);
+  font-weight:400;
+}
+
+.meta-item svg{width:14px;height:14px;opacity:.55}
+
+/* --- Main content --- */
+.article-body{
+  max-width:680px;margin:0 auto;
+  padding:0 24px 40px;
+}
+
+.section{
+  padding:48px 0;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .5s ease,transform .5s ease;
+}
+
+.section.visible{opacity:1;transform:none}
+
+.section-overline{
+  font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;
+  color:var(--accent);margin-bottom:10px;
+}
+
+.section h2{
+  font-size:clamp(22px,3.5vw,32px);
+  font-weight:800;line-height:1.3;
+  margin-bottom:12px;
+  letter-spacing:-.3px;
+}
+
+.section > p{
+  color:var(--ink-muted);font-size:16px;
+  margin-bottom:28px;max-width:560px;
+}
+
+/* --- Callout block --- */
+.callout{
+  background:var(--surface-warm);
+  border:1px solid var(--border);
+  border-right:3px solid var(--accent);
+  border-radius:var(--radius);
+  padding:24px 28px;
+  margin:28px 0;
+}
+
+.callout-title{
+  font-size:14px;font-weight:700;
+  margin-bottom:8px;color:var(--ink);
+  display:flex;align-items:center;gap:8px;
+}
+
+.callout-title svg{width:16px;height:16px;color:var(--accent)}
+
+.callout p{
+  color:var(--ink-muted);font-size:15px;line-height:1.85;
+}
+
+.callout strong{color:var(--ink)}
+
+/* --- Info cards --- */
+.info-card{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:28px 24px;
+  margin-bottom:16px;
+  transition:border-color .25s,box-shadow .25s;
+}
+
+.info-card:hover{
+  border-color:var(--border-strong);
+  box-shadow:0 4px 20px rgba(0,0,0,.04);
+}
+
+.info-card .card-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:4px 10px;border-radius:4px;
+  margin-bottom:14px;
+}
+
+.info-card .card-badge.explain{background:var(--blue-bg);color:var(--blue-text)}
+.info-card .card-badge.warn{background:var(--green-bg);color:var(--green-text)}
+.info-card .card-badge.live{background:var(--accent-bg);color:var(--accent)}
+
+.info-card h3{font-size:17px;font-weight:700;margin-bottom:8px;color:var(--ink)}
+.info-card p{color:var(--ink-muted);font-size:15px;line-height:1.85}
+
+/* --- Event details grid --- */
+.event-details{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  margin:28px 0;
+}
+
+.detail-card{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:24px 20px;
+  text-align:center;
+  transition:border-color .25s,box-shadow .25s;
+}
+
+.detail-card:hover{
+  border-color:var(--border-strong);
+  box-shadow:0 4px 20px rgba(0,0,0,.04);
+}
+
+.detail-icon{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;
+  background:var(--accent-bg);color:var(--accent);
+  border:1px solid var(--accent-border);
+}
+
+.detail-icon svg{width:22px;height:22px}
+
+.detail-card h4{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--ink)}
+.detail-card p{font-size:13px;color:var(--ink-muted);line-height:1.6}
+
+/* --- Signs grid --- */
+.signs-list{display:grid;gap:12px}
+
+.sign-item{
+  background:var(--surface-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  display:flex;align-items:flex-start;gap:14px;
+  transition:border-color .2s;
+}
+
+.sign-item:hover{border-color:var(--border-strong)}
+
+.sign-icon{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;
+  background:var(--accent-bg);color:var(--accent);
+  border:1px solid var(--accent-border);
+}
+
+.sign-item h4{font-size:15px;font-weight:700;margin-bottom:2px;color:var(--ink)}
+.sign-item p{font-size:13px;color:var(--ink-muted);line-height:1.75}
+
+/* --- Inline tip --- */
+.inline-tip{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 18px;border-radius:var(--radius);
+  margin:20px 0;font-size:14px;line-height:1.85;
+}
+
+.inline-tip svg{width:16px;height:16px;flex-shrink:0;margin-top:4px}
+
+.inline-tip.tip-accent{
+  background:var(--accent-bg);
+  border:1px solid var(--accent-border);
+  color:var(--accent);
+}
+
+.inline-tip.tip-green{
+  background:var(--green-bg);
+  border:1px solid var(--green-border);
+  color:var(--green-text);
+}
+
+/* --- FAQ --- */
+.faq-item{
+  border-bottom:1px solid var(--border);
+}
+
+.faq-item:last-child{border-bottom:none}
+
+.faq-q{
+  padding:18px 0;font-size:15px;font-weight:600;
+  cursor:pointer;display:flex;
+  align-items:center;justify-content:space-between;gap:12px;
+  -webkit-tap-highlight-color:transparent;
+  color:var(--ink);transition:color .2s;
+}
+
+.faq-q:hover{color:var(--accent)}
+
+.faq-q .arrow{
+  transition:transform .3s cubic-bezier(.22,1,.36,1);
+  flex-shrink:0;color:var(--ink-ghost);
+  width:18px;height:18px;
+}
+
+.faq-item.open .arrow{transform:rotate(180deg)}
+
+.faq-a{
+  max-height:0;overflow:hidden;
+  transition:max-height .4s cubic-bezier(.22,1,.36,1);
+}
+
+.faq-item.open .faq-a{max-height:300px}
+
+.faq-a-inner{
+  padding:0 0 18px;
+  color:var(--ink-muted);font-size:14px;line-height:1.9;
+}
+
+/* --- CTA --- */
+.cta-section{
+  text-align:center;
+  padding:48px 24px 32px;
+  max-width:520px;margin:0 auto;
+}
+
+.cta-section h2{
+  font-size:clamp(20px,3vw,28px);
+  font-weight:800;margin-bottom:10px;
+}
+
+.cta-section p{color:var(--ink-muted);font-size:15px;margin-bottom:24px}
+
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 28px;border-radius:var(--radius);
+  font-size:16px;font-weight:700;
+  text-decoration:none;border:none;
+  font-family:'Heebo',sans-serif;cursor:pointer;
+  background:var(--accent);color:#fff;
+  transition:background .2s,transform .15s;
+}
+
+.btn-primary:hover{background:var(--accent-soft)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary svg{width:18px;height:18px}
+
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:var(--radius);
+  font-size:15px;font-weight:600;
+  text-decoration:none;
+  font-family:'Heebo',sans-serif;cursor:pointer;
+  background:var(--surface-card);color:var(--ink);
+  border:1px solid var(--border-strong);
+  transition:all .2s;
+  margin-top:12px;
+}
+
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-secondary:active{transform:scale(.98)}
+.btn-secondary svg{width:16px;height:16px}
+
+.cta-buttons{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+
+/* --- Separator --- */
+.sep-line{
+  width:40px;height:1px;
+  background:var(--border-strong);
+  margin:0 auto;
+}
+
+/* --- Countdown --- */
+.countdown{
+  display:flex;gap:16px;justify-content:center;
+  margin:24px 0;
+}
+
+.countdown-item{
+  text-align:center;
+}
+
+.countdown-num{
+  font-size:clamp(28px,5vw,42px);
+  font-weight:900;color:var(--accent);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+
+.countdown-label{
+  font-size:11px;font-weight:600;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-top:4px;
+}
+
+.countdown-sep{
+  font-size:clamp(24px,4vw,36px);
+  font-weight:300;color:var(--border-strong);
+  line-height:1;padding-top:2px;
+}
+
+/* --- Hero message --- */
+.hero-message{
+  background:var(--surface-warm);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:28px 24px;
+  margin:28px 0;
+  text-align:center;
+}
+
+.hero-message p{
+  color:var(--ink-muted);font-size:16px;line-height:1.9;
+}
+
+.hero-message strong{color:var(--ink)}
+
+/* --- Footer --- */
+footer{
+  text-align:center;padding:32px 24px 48px;
+  border-top:1px solid var(--border);
+  max-width:680px;margin:0 auto;
+}
+
+.footer-series{font-size:12px;color:var(--ink-ghost);margin-bottom:6px;letter-spacing:.3px}
+
+.footer-credit{
+  font-size:14px;color:var(--ink-muted);font-weight:500;
+}
+
+.footer-credit a{color:var(--accent);text-decoration:none}
+.footer-credit a:hover{text-decoration:underline}
+
+.footer-links{
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  margin-top:12px;
+}
+
+.footer-links a{
+  font-size:13px;color:var(--ink-faint);
+  text-decoration:none;transition:color .2s;
+}
+
+.footer-links a:hover{color:var(--accent)}
+
+/* --- Responsive --- */
+@media(max-width:640px){
+  .article-header{padding:60px 18px 36px}
+  .article-body{padding:0 18px 32px}
+  .callout{padding:20px 18px}
+  .info-card{padding:22px 18px}
+  .event-details{grid-template-columns:1fr}
+  .sticky-header{padding:0 16px;height:48px}
+  .cta-section{padding:36px 18px 24px}
+  .section{padding:36px 0}
+  .countdown{gap:12px}
+  .detail-card{padding:20px 16px}
+  .sign-item{padding:16px;gap:12px}
+  .sign-icon{width:32px;height:32px;font-size:13px}
+}
+
+@media(max-width:380px){
+  .article-header h1{font-size:24px}
+  .section h2{font-size:20px}
+}
+
+@media(hover:none){
+  .info-card:hover{box-shadow:none;border-color:var(--border)}
+  .detail-card:hover{box-shadow:none;border-color:var(--border)}
+  .btn-primary:hover{background:var(--accent)}
+  .info-card:active{box-shadow:0 2px 12px rgba(0,0,0,.04)}
+  .btn-primary:active{transform:scale(.97)}
+}
+
+@supports(padding:max(0px)){
+  body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+  footer{padding-bottom:max(48px,env(safe-area-inset-bottom))}
+}
+</style>
+</head>
+<body>
+
+<div class="reading-progress" id="progressBar"></div>
+
+<header class="sticky-header" id="stickyHeader">
+  <span class="h-title">Zoom Q&A — Claude Code</span>
+  <span class="h-badge">LIVE</span>
+</header>
+
+<div class="article-header">
+  <div class="breadcrumb">
+    <a href="https://shaharelhadad.github.io/claude-code-tips/">Claude Code Tips</a>
+    <span class="sep">/</span>
+    <span>Zoom Q&A</span>
+  </div>
+
+  <h1>שאלות ותשובות <em>LIVE</em><br>על Claude Code</h1>
+
+  <p class="article-lead">
+    אחרי שבוע בלי טיפ יומי, החלטנו לעשות משהו אחר.
+    במקום לכתוב לכם, באנו לשמוע אתכם.
+  </p>
+
+  <div class="article-meta">
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>יום רביעי, 29 באפריל 2026</span>
+    </div>
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>19:00 — 20:00</span>
+    </div>
+    <div class="meta-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <span>לכל הרמות</span>
+    </div>
+  </div>
+</div>
+
+<main class="article-body">
+
+  <!-- Section 1: The message -->
+  <section class="section" id="about">
+    <div class="hero-message">
+      <p>
+        שבוע שלם בלי טיפ יומי. <strong>לא כי נגמרו לנו הרעיונות.</strong>
+        <br><br>
+        אלא כי קיבלנו כל כך הרבה שאלות, תגובות, הודעות בפרטי,
+        ש<strong>החלטנו לעצור הכל ולענות לכולכם.</strong>
+        <br><br>
+        שעה שלמה. פנים מול פנים. בלי מצגות, בלי הרצאות.
+        <strong>רק אתם, השאלות שלכם, ותשובות אמיתיות.</strong>
+      </p>
+    </div>
+
+    <div class="countdown" id="countdown">
+      <div class="countdown-item">
+        <div class="countdown-num" id="days">0</div>
+        <div class="countdown-label">ימים</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-item">
+        <div class="countdown-num" id="hours">0</div>
+        <div class="countdown-label">שעות</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-item">
+        <div class="countdown-num" id="minutes">0</div>
+        <div class="countdown-label">דקות</div>
+      </div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-item">
+        <div class="countdown-num" id="seconds">0</div>
+        <div class="countdown-label">שניות</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sep-line"></div>
+
+  <!-- Section 2: Event Details -->
+  <section class="section" id="details">
+    <div class="section-overline">פרטי המפגש</div>
+    <h2>מה, מתי ואיפה</h2>
+    <p>כל מה שצריך לדעת כדי להגיע מוכנים.</p>
+
+    <div class="event-details">
+      <div class="detail-card">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h4>יום רביעי, 29.4</h4>
+        <p>סמנו ביומן</p>
+      </div>
+      <div class="detail-card">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h4>19:00 — 20:00</h4>
+        <p>שעה שלמה של Q&A</p>
+      </div>
+      <div class="detail-card">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>
+        </div>
+        <h4>Zoom</h4>
+        <p>לינק יישלח ביום המפגש</p>
+      </div>
+      <div class="detail-card">
+        <div class="detail-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h4>לכל הרמות</h4>
+        <p>מתחילים ומתקדמים</p>
+      </div>
+    </div>
+
+    <div class="inline-tip tip-green">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>
+        <strong>אין צורך בהכנה מיוחדת.</strong> אם יש לכם שאלה, מגיע לכם תשובה.
+        לא משנה אם התחלתם אתמול או שאתם משתמשים כבר חודשים.
+      </span>
+    </div>
+  </section>
+
+  <div class="sep-line"></div>
+
+  <!-- Section 3: What topics -->
+  <section class="section" id="topics">
+    <div class="section-overline">על מה אפשר לשאול</div>
+    <h2>כל שאלה לגיטימית</h2>
+    <p>הנה כמה דוגמאות לנושאים שעלו הכי הרבה בהודעות שקיבלנו.</p>
+
+    <div class="signs-list">
+      <div class="sign-item">
+        <div class="sign-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <div>
+          <h4>התקנה והגדרות</h4>
+          <p>איך מתקינים, מגדירים, ומתחילים לעבוד עם Claude Code בצורה נכונה.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div>
+          <h4>כתיבת קוד ופרויקטים</h4>
+          <p>איך לבנות פרויקטים, לכתוב קוד טוב יותר, ולתת ל-Claude Code לעבוד בשבילכם.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <h4>פרומפטים וטכניקות</h4>
+          <p>איך לנסח בקשות, מה עובד, מה לא עובד, ואיך לשפר את התוצאות.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <div>
+          <h4>CLAUDE.md וקונפיגורציה</h4>
+          <p>איך מגדירים את CLAUDE.md, מה לשים בו, ואיך הוא משפיע על התוצאות.</p>
+        </div>
+      </div>
+
+      <div class="sign-item">
+        <div class="sign-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        <div>
+          <h4>בעיות ופתרונות</h4>
+          <p>נתקעתם? משהו לא עובד? תביאו את הבעיה ונפתור אותה יחד בזמן אמת.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sep-line"></div>
+
+  <!-- Section 4: FAQ -->
+  <section class="section" id="faq">
+    <div class="section-overline">שאלות נפוצות</div>
+    <h2>לפני שנפגשים</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>צריך לדעת לתכנת כדי להשתתף?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          ממש לא. המפגש פתוח לכל הרמות. חלק מהמשתתפים הם מפתחים מנוסים, חלק רק התחילו להשתמש ב-Claude Code בשביל לבנות דברים. כל שאלה לגיטימית.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>איפה אקבל את הלינק ל-Zoom?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          הלינק יישלח ביום המפגש, כמה שעות לפני, ישירות דרך הערוצים שלנו. תוסיפו ליומן כדי לא לפספס.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>אפשר לשלוח שאלות מראש?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          בטח. שלחו הודעה עם השאלות שלכם ונגיע למפגש מוכנים עם תשובות.
+          אפשר גם לשאול בזמן אמת במהלך ה-Zoom.
+        </div>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>יהיה הקלטה?</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a">
+        <div class="faq-a-inner">
+          כן, המפגש יוקלט ויהיה זמין אחר כך למי שלא יכול להגיע.
+          אבל להיות שם בלייב זה משהו אחר לגמרי.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>נתראה ביום רביעי?</h2>
+  <p>תוסיפו ליומן עכשיו כדי לא לשכוח. שעה אחת שיכולה לחסוך לכם שבועות של ניסוי וטעייה.</p>
+  <div class="cta-buttons">
+    <a href="#" class="btn-primary" id="calendarBtn" onclick="addToCalendar(event)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      הוספה ליומן
+    </a>
+    <a href="https://shaharelhadad.github.io/claude-code-tips/" class="btn-secondary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      חזרה לכל הטיפים
+    </a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-series">Claude Code Tips</div>
+  <div class="footer-credit">
+    by <a href="https://www.instagram.com/shahar_elhadad" target="_blank">Shahar Elhadad</a>
+  </div>
+  <div class="footer-links">
+    <a href="https://shaharelhadad.github.io/claude-code-guide/">מדריך התקנה</a>
+    <a href="https://shaharelhadad.github.io/claude-code-tips/">כל הטיפים</a>
+  </div>
+</footer>
+
+<script>
+const progressBar = document.getElementById('progressBar');
+const stickyHeader = document.getElementById('stickyHeader');
+
+function updateScroll() {
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  const s = window.scrollY;
+  if (h > 0) progressBar.style.width = (s / h * 100) + '%';
+  stickyHeader.classList.toggle('visible', s > 300);
+}
+
+window.addEventListener('scroll', updateScroll, { passive: true });
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// Countdown
+const eventDate = new Date('2026-04-29T19:00:00+03:00');
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = eventDate - now;
+
+  if (diff <= 0) {
+    document.getElementById('days').textContent = '0';
+    document.getElementById('hours').textContent = '0';
+    document.getElementById('minutes').textContent = '0';
+    document.getElementById('seconds').textContent = '0';
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('days').textContent = days;
+  document.getElementById('hours').textContent = hours;
+  document.getElementById('minutes').textContent = minutes;
+  document.getElementById('seconds').textContent = seconds;
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// Add to Calendar (Google Calendar)
+function addToCalendar(e) {
+  e.preventDefault();
+  const title = encodeURIComponent('Zoom Q&A — Claude Code שאלות ותשובות');
+  const details = encodeURIComponent('מפגש Zoom פתוח לשאלות ותשובות על Claude Code. לכל הרמות.\n\nלינק ל-Zoom יישלח לפני המפגש.');
+  const location = encodeURIComponent('Zoom');
+  const start = '20260429T160000Z';
+  const end = '20260429T170000Z';
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+  window.open(url, '_blank');
+}
+
+window.__TIP_META__ = { id: 'zoom-qa', title: 'Zoom Q&A' };
+</script>
+</body>
+</html>
